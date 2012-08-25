@@ -1,8 +1,9 @@
-drop table trickleup.participant_livestock;
+drop table trickleup.livestock_tracking;
 
-CREATE TABLE trickleup.participant_livestock (
+CREATE TABLE trickleup.livestock_tracking (
   participant_id int(11) NOT NULL,
-  livestock_id int(11) NOT NULL,
+  survey_period varchar(25) NOT NULL,
+  livestock_num int(11) NOT NULL,
   livestock_type enum('goat/sheep','pig') NOT NULL,
   age_in_months int(11) NULL,
   weight_kg float NULL,
