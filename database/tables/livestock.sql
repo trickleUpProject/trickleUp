@@ -1,4 +1,4 @@
-drop table trickleup.livestock;
+drop table if exists trickleup.livestock;
 
 create table trickleup.livestock(
   participant_id int(11) not null,

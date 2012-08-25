@@ -1,4 +1,4 @@
-drop table trickleup.participant;
+drop table if exists trickleup.participant;
 
 CREATE TABLE trickleup.participant (
   business_number int(11) NOT NULL,
