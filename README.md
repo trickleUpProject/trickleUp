@@ -1,4 +1,4 @@
 trickleUp
 =========
 
-data-upload and reporting for Trickle-Up
+data-upload and reporting for Trickle-Up, edited by LDL
