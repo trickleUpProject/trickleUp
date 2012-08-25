@@ -1,9 +1,12 @@
 drop table if exists trickleup.livestock_tracking;
 
 CREATE TABLE trickleup.livestock_tracking (
-  participant_id int(11) NOT NULL,
-  survey_period varchar(25) NOT NULL,
-  livestock_num int(11) NOT NULL,
+  business_number int(11) NOT NULL,
+  participant_name varchar(100) not null,
+  quarter      INT NULL,
+  month        INT NULL,
+  year         INT NOT NULL,
+  livestock_number smallint NOT NULL,
   livestock_type enum('goat/sheep','pig') NOT NULL,
   age_in_months int(11) NULL,
   weight_kg float NULL,
@@ -22,5 +25,7 @@ CREATE TABLE trickleup.livestock_tracking (
   sale_price float NULL,
   shed_condition int NULL,
   maintenance_cleanliness enum ('Y','N') NULL,
-  KMnO4_application enum ('Y','N') NULL
+  KMnO4_application enum ('Y','N') NULL,
+  primary key (business_number, year, quarter, month, livestock_number)
+  
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
