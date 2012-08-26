@@ -137,7 +137,6 @@ selectData(0);
   <p onclick="selectData(3)" id="data3" class="unselectedMenuItem">Return on Investement</p>
   <p onclick="selectData(4)" id="data4" class="unselectedMenuItem">Livestock Mortality Rate</p>
 </td>
-<<<<<<< HEAD
 <td class="rightColumn"> 
 
 <form name="report" action=''> 
@@ -160,7 +159,6 @@ selectData(0);
     <select>
       <option>VIEW ALL</option>
     </select>
-=======
 <td class="rightColumn"> <strong>During:</strong>
 <select>
   <option>This quarter</option>
