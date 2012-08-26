@@ -42,17 +42,18 @@ selectData(0);
 
             function drawChart() {
                 var data = google.visualization.arrayToDataTable([
-                    ["Month", "USA", "ABC", "Average"],
-                    ["03", 112, 118, 115],
-                    ["04", 212, 312, 262],
-                    ["05", 200, 100, 150]
+                    ["Quarter", "Corn Flower", "Cucumber", "Goat/Sheep", "Paddy", "Pig", "Pisciculture", "Spinach"],
+                    ["Q1", 4000, 2000, 7000, 4000, 2000, 7000, 7000],
+                    ["Q2", 600, 2500, 1000, 4000, 2000, 7000, 4000],
+                    ["Q3", 600, 2500, 1000, 5000, 2500, 2600, 5000], 
+					["Q4", 5000, 2500, 2600, 4000, 2000, 7000, 4000]
                 ]);
             var options = {
-                title:"Stuff Over Time",
+                title:"",
                 width:600,
                 height:350,
-                vAxis:{title:"Stuff"},
-                hAxis:{title:"Time"},
+                vAxis:{title:"Input Cost (in Rs.)"},
+                hAxis:{title:"Quarter"},
                 seriesType:"bars",
                 series:{2:{type:"line"}}
             };
@@ -106,7 +107,6 @@ selectData(0);
 <select>
   <option>This quarter</option>
   <option>Last quarter</option>
-  <option>Last 3 quarters</option>
   <option>This year</option>
   <option>Last Year</option>
   <option>All time</option>
