@@ -40,7 +40,22 @@ selectData(0);
             google.load('visualization', '1.0', {'packages':['corechart']});
             google.setOnLoadCallback(drawChart);
 
-            function drawChart() {
+            function drawChart(data, options) {
+                var chart = new google.visualization.ComboChart(
+                    document.getElementById('chart_div'));
+                chart.draw(data, options);
+            }
+            function setChart() {
+                var data = google.visualization.arrayToDataTable([
+                    
+                ]);
+                var options = {
+                    
+                };
+            drawChart(data, options);
+            }
+
+            /**function drawChart() {
                 var data = google.visualization.arrayToDataTable([
                     ["Quarter", "Corn Flower", "Cucumber", "Goat/Sheep", "Paddy", "Pig", "Pisciculture", "Spinach"],
                     ["Q1", 4000, 2000, 7000, 4000, 2000, 7000, 7000],
@@ -82,6 +97,10 @@ selectData(0);
                 document.getElementById('chart_div'));
             chart.draw(data, options);
             }
+
+            function test() {
+                alert("test");
+            }**/
                 
 
         </script>
@@ -103,6 +122,30 @@ selectData(0);
   <p onclick="selectData(3)" id="data3" class="unselectedMenuItem">Return on Investement</p>
   <p onclick="selectData(4)" id="data4" class="unselectedMenuItem">Livestock Mortality Rate</p>
 </td>
+<<<<<<< HEAD
+<td class="rightColumn"> 
+
+<form name="report" action=''> 
+    <strong>During:</strong>
+    <select>
+      <option value='0'>This quarter</option>
+      <option value='1'>Last quarter</option>
+      <option value='2'>Last 3 quarters</option>
+      <option value='3'>This year</option>
+      <option value='7'>Last Year</option>
+      <option value='all'>All time</option>
+    </select>
+      |
+      <strong>Filter by:</strong>
+      <select>
+      <option>Participants</option>
+        <option>Staff</option>
+
+    </select> | <strong>Individual:</strong>
+    <select>
+      <option>VIEW ALL</option>
+    </select>
+=======
 <td class="rightColumn"> <strong>During:</strong>
 <select>
   <option>This quarter</option>
@@ -116,11 +159,10 @@ selectData(0);
   <select>
   <option>Participants</option>
     <option>Staff</option>
+>>>>>>> 10dcb6fda984c7f096046924ac822bb9e3dbe308
 
-</select> | <strong>Individual:</strong>
-<select>
-  <option>VIEW ALL</option>
-</select>
+    <input type='button' value='View' onclick="test()"/>
+</form>
   
    <hr>
    
