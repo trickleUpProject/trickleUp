@@ -12,5 +12,5 @@ create table trickleup.small_business_payment (
     particular            varchar(200),
     amount                float null,
     staff_signature       varchar(100),
-    primary key (business_number, year, quarter, month, line_number)
+    unique key (business_number, year, quarter, month, line_number)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

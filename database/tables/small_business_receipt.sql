@@ -14,5 +14,5 @@ create table trickleup.small_business_receipt (
     consumption_amount    float null,
     total_sale            float null,
     staff_signature       varchar(100),
-    primary key (business_number, year, quarter, month, line_number)
+    unique key (business_number, year, quarter, month, line_number)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

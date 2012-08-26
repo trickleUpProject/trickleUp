@@ -26,6 +26,6 @@ CREATE TABLE trickleup.livestock_tracking (
   shed_condition int NULL,
   maintenance_cleanliness enum ('Y','N') NULL,
   KMnO4_application enum ('Y','N') NULL,
-  primary key (business_number, year, quarter, month, livestock_number)
+  unique key (business_number, year, quarter, month, livestock_number)
   
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

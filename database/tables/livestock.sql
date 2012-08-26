@@ -21,6 +21,6 @@ create table trickleup.livestock(
   swine_flu_vaccine_yr1 date null,
   swine_flu_vaccine_yr2 date null,
   castration enum('Y','N','N/A') null,
-  primary key (business_number, year, quarter, month, livestock_number)
+  unique key (business_number, year, quarter, month, livestock_number)
 
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;

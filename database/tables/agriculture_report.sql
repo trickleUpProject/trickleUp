@@ -1,4 +1,4 @@
-drop table trickleup.agriculture_report;
+drop table if exists trickleup.agriculture_report;
 
 create table trickleup.agriculture_report (
  agriculture_report_id int not null auto_increment,
