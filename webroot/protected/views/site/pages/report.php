@@ -57,17 +57,18 @@ selectData(0);
 
             /**function drawChart() {
                 var data = google.visualization.arrayToDataTable([
-                    ["Month", "USA", "ABC", "Average"],
-                    ["03", 112, 118, 115],
-                    ["04", 212, 312, 262],
-                    ["05", 200, 100, 150]
+                    ["Quarter", "Corn Flower", "Cucumber", "Goat/Sheep", "Paddy", "Pig", "Pisciculture", "Spinach"],
+                    ["Q1", 4000, 2000, 7000, 4000, 2000, 7000, 7000],
+                    ["Q2", 600, 2500, 1000, 4000, 2000, 7000, 4000],
+                    ["Q3", 600, 2500, 1000, 5000, 2500, 2600, 5000], 
+					["Q4", 5000, 2500, 2600, 4000, 2000, 7000, 4000]
                 ]);
             var options = {
-                title:"Stuff Over Time",
+                title:"",
                 width:600,
                 height:350,
-                vAxis:{title:"Stuff"},
-                hAxis:{title:"Time"},
+                vAxis:{title:"Input Cost (in Rs.)"},
+                hAxis:{title:"Quarter"},
                 seriesType:"bars",
                 series:{2:{type:"line"}}
             };
@@ -121,6 +122,7 @@ selectData(0);
   <p onclick="selectData(3)" id="data3" class="unselectedMenuItem">Return on Investement</p>
   <p onclick="selectData(4)" id="data4" class="unselectedMenuItem">Livestock Mortality Rate</p>
 </td>
+<<<<<<< HEAD
 <td class="rightColumn"> 
 
 <form name="report" action=''> 
@@ -143,6 +145,21 @@ selectData(0);
     <select>
       <option>VIEW ALL</option>
     </select>
+=======
+<td class="rightColumn"> <strong>During:</strong>
+<select>
+  <option>This quarter</option>
+  <option>Last quarter</option>
+  <option>This year</option>
+  <option>Last Year</option>
+  <option>All time</option>
+</select>
+  |
+  <strong>Filter by:</strong>
+  <select>
+  <option>Participants</option>
+    <option>Staff</option>
+>>>>>>> 10dcb6fda984c7f096046924ac822bb9e3dbe308
 
     <input type='button' value='View' onclick="test()"/>
 </form>

@@ -3,9 +3,10 @@ drop table if exists trickleup.livestock;
 create table trickleup.livestock(
   business_number int(11) NOT NULL,
   participant_name varchar(100) not null,
-  quarter      INT NULL,
-  month        INT NULL,
+  staff                varchar(100) null,
+  month        INT NOT NULL,
   year         INT NOT NULL,
+  quarter      INT NULL,
   livestock_number smallint NOT NULL,
   livestock_type enum('goat/sheep','pig') NOT NULL,
   gender         enum ('M','F') not null,
@@ -21,6 +22,6 @@ create table trickleup.livestock(
   swine_flu_vaccine_yr1 date null,
   swine_flu_vaccine_yr2 date null,
   castration enum('Y','N','N/A') null,
-  unique key (business_number, year, quarter, month, livestock_number)
+  primary key (business_number, year, month, livestock_number, livestock_type)
 
 )ENGINE=InnoDB DEFAULT CHARSET=utf8;
