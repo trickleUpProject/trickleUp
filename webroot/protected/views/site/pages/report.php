@@ -26,7 +26,12 @@ function selectData(id)
 	//alert("select data" + id);
 	
 	//UPDATE GRAPH
-    redraw();
+	if(id == 4){
+    	drawMortalityLine();
+	}
+	else if(id == 0){
+		drawChart();	
+	}
 	
 }
 
@@ -38,6 +43,8 @@ selectData(0);
         <script type="text/javascript">
 
             google.load('visualization', '1.0', {'packages':['corechart']});
+			  google.load("visualization", "1", {packages: ['annotatedtimeline']});
+
             google.setOnLoadCallback(drawChart);
 
             function drawChart() {
@@ -55,26 +62,27 @@ selectData(0);
                 vAxis:{title:"Input Cost (in Rs.)"},
                 hAxis:{title:"Quarter"},
                 seriesType:"bars",
-                series:{2:{type:"line"}}
+              //  series:{2:{type:"line"}}
             };
             var chart = new google.visualization.ComboChart(
                 document.getElementById('chart_div'));
             chart.draw(data, options);
             }
 
-            function redraw() {
+            function drawMortality() {
                 var data = google.visualization.arrayToDataTable([
-                    ["Month", "USA", "ABC", "Average"],
-                    ["03", 12, 18, 15],
-                    ["04", 12, 12, 62],
-                    ["05", 10, 10, 50]
+                    ["Quarter", "Cow/Sheep Mortality", "Pig Mortality"],
+                    ["Q1", 12, 18],
+                    ["Q2", 12, 12],
+                    ["Q3", 10, 10],
+					["Q3", 5, 8]
                 ]);
             var options = {
-                title:"Stuff Over Time",
+                title:"",
                 width:600,
                 height:350,
-                vAxis:{title:"Stuff"},
-                hAxis:{title:"Time"},
+                vAxis:{title:"Mortality Rate %"},
+                hAxis:{title:"Quarter"},
                 seriesType:"bars",
                 series:{2:{type:"line"}}
             };
@@ -82,6 +90,32 @@ selectData(0);
                 document.getElementById('chart_div'));
             chart.draw(data, options);
             }
+	//		
+	function drawMortalityLine() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Date');
+        data.addColumn('number', 'Sheep/Cow Mortality');
+        data.addColumn('number', 'Pig Deaths');
+        data.addRows([
+          [new Date(2008, 1 ,1), .04, .08],
+          [new Date(2008, 2 ,2), .02, .05],
+          [new Date(2008, 3 ,3), .10, .12],
+          [new Date(2008, 4 ,4), .03, .05],
+          [new Date(2008, 5 ,5), .05, .06],
+          [new Date(2008, 6 ,6), .08, .02]
+        ]);
+		
+		//trying to formate numbers as percentages here... but not working...
+		var formatter = new google.visualization.NumberFormat({ 
+		  pattern: '#%', 
+		  fractionDigits: 2
+		});
+		formatter.format(data, 2); // Apply formatter to first column.
+
+        var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
+        chart.draw(data, {displayAnnotations: true});
+		
+      }
                 
 
         </script>
@@ -103,7 +137,7 @@ selectData(0);
   <p onclick="selectData(3)" id="data3" class="unselectedMenuItem">Return on Investement</p>
   <p onclick="selectData(4)" id="data4" class="unselectedMenuItem">Livestock Mortality Rate</p>
 </td>
-<td class="rightColumn"> <strong>During:</strong>
+<td class="rightColumn"> <div id="during" style=""><strong>During:</strong>
 <select>
   <option>This quarter</option>
   <option>Last quarter</option>
@@ -111,7 +145,7 @@ selectData(0);
   <option>Last Year</option>
   <option>All time</option>
 </select>
-  |
+  </div>
   <strong>Filter by:</strong>
   <select>
   <option>Participants</option>
@@ -124,7 +158,7 @@ selectData(0);
   
    <hr>
    
-   <div id="chart_div">
+   <div id="chart_div" style='width: 700px; height: 240px;'>
    
    </div>
  
