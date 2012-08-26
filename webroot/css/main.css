@@ -230,7 +230,7 @@ div.search-form
 }
 
 .leftColumn{
-background-color:#CCC;
+background-color:#84d2d7;
 padding:15px;
 margin:15px;
 }
@@ -249,8 +249,8 @@ margin:15px;
 
 .selectedMenuItem{
 background-color:#FFF;
-font-size:12px;
-    cursor: hand;
+font-size:13px;
+cursor: hand;
 
 }
 

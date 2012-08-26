@@ -57,7 +57,7 @@ selectData(0);
                 ]);
             var options = {
                 title:"",
-                width:700,
+                width:600,
                 height:350,
                 vAxis:{title:"Input Cost (in Rs.)"},
                 hAxis:{title:"Quarter"},
@@ -67,13 +67,8 @@ selectData(0);
             var chart = new google.visualization.ComboChart(
                 document.getElementById('chart_div'));
             chart.draw(data, options);
-			
-					//enable during dropdown
-					  document.getElementById('during').style.visibility='visible';  
-
             }
 
-//
             function drawMortality() {
                 var data = google.visualization.arrayToDataTable([
                     ["Quarter", "Cow/Sheep Mortality", "Pig Mortality"],
@@ -94,8 +89,6 @@ selectData(0);
             var chart = new google.visualization.ComboChart(
                 document.getElementById('chart_div'));
             chart.draw(data, options);
-			
-			
             }
 	//		
 	function drawMortalityLine() {
@@ -122,10 +115,6 @@ selectData(0);
         var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
         chart.draw(data, {displayAnnotations: true});
 		
-		//disable during dropdown
-		  document.getElementById('during').style.visibility='hidden';  
-
-		
       }
                 
 
@@ -151,8 +140,30 @@ selectData(0);
 <td class="rightColumn"> 
 
 <form name="report" action=''> 
+<<<<<<< HEAD
+    <strong>During:</strong>
+    <select>
+      <option value='0'>This quarter</option>
+      <option value='1'>Last quarter</option>
+      <option value='2'>Last 3 quarters</option>
+      <option value='3'>This year</option>
+      <option value='7'>Last Year</option>
+      <option value='all'>All time</option>
+    </select>
+      |
+      <strong>Filter by:</strong>
+      <select>
+      <option>Participants</option>
+        <option>Staff</option>
+
+    </select> | <strong>Individual:</strong>
+    <select>
+      <option>VIEW ALL</option>
+    </select>
+=======
+>>>>>>> 07a7307b2eb5a4b794a2d9c5f646a4488400fc39
 <td class="rightColumn"> <strong>During:</strong>
-<select id="during">
+<select>
   <option>This quarter</option>
   <option>Last quarter</option>
   <option>This year</option>
@@ -175,7 +186,7 @@ selectData(0);
   
    <hr>
    
-   <div id="chart_div" style='width: 700px; height: 350px;'>
+   <div id="chart_div" style='width: 700px; height: 240px;'>
    
    </div>
  
