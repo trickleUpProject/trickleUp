@@ -23,7 +23,7 @@
 <div class="container" id="page">
 
 	<div id="header">
-		<div id="logo"><img src="images/logo_trickleup.gif" width="151" height="35" alt="TrickleUp" />
+		<div id="logo"><img src="images/logo_trickleup.gif" width="151" height="35" alt="TrickleUp" /> data manager
 </div>
 	</div><!-- header -->
 

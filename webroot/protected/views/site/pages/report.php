@@ -105,8 +105,8 @@ selectData(0);
         data.addColumn('number', 'Pig Deaths');
         data.addRows([
           [new Date(2008, 1 ,1), .04, .08],
-          [new Date(2008, 2 ,2), .02, .05],
-          [new Date(2008, 3 ,3), .10, .12],
+          [new Date(2008, 2 ,2), null, .05],
+          [new Date(2008, 3 ,3), .10, null],
           [new Date(2008, 4 ,4), .03, .05],
           [new Date(2008, 5 ,5), .05, .06],
           [new Date(2008, 6 ,6), .08, .02]
