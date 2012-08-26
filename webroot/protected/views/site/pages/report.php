@@ -153,11 +153,11 @@ selectData(0);
 <form name="report" action=''> 
 <td class="rightColumn"> <strong>During:</strong>
 <select id="during">
-  <option>This quarter</option>
-  <option>Last quarter</option>
-  <option>This year</option>
-  <option>Last Year</option>
-  <option>All time</option>
+  <option value='1'>This quarter</option>
+  <option value='2'>Last quarter</option>
+  <option value='4'>This year</option>
+  <option value='8'>Last Year</option>
+  <option value='all'>All time</option>
 </select>
   </div>
   <strong>Filter by:</strong>
