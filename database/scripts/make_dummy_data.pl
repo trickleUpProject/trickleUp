@@ -65,7 +65,7 @@ sub dummy_agri_payment {
   $values{month} = $month;
   $values{year} = $year;
   $values{line_number} = ++$line_number{agri_payment}{$business_number}{$participant}{$quarter}{$year};
-  $values{date} = random_from_array(0,@recent_dates);
+  $values{date} = random_string_from_array(0,@recent_dates);
   $values{particular} = random_integer(0,10);
   $values{quantity} = random_integer(1,20);
   $values{amount} = random_integer(5,10);
@@ -92,7 +92,7 @@ sub dummy_agri_receipt {
   $values{month} = $month;
   $values{year} = $year;
   $values{line_number} = ++$line_number{agri_receipt}{$business_number}{$participant}{$quarter}{$year};
-  $values{date} = random_from_array(0,@recent_dates);
+  $values{date} = random_string_from_array(0,@recent_dates);
   $values{crop_fish} = '"'.random_from_array(0,@crops).'"';
   $values{consumption_prod} = random_integer(1,20);
   $values{sale_weight} = random_integer(5,10);
@@ -123,7 +123,7 @@ sub dummy_livestock {
   $values{livestock_type} = '"'.$livestock_type.'"';
   $values{livestock_number} = ++$line_number{livestock}{$business_number}{$participant}{$quarter}{$year}{$livestock_type};
   $values{gender} = '"'.random_from_array(0,@gender).'"';
-  $values{acquisition_date} = random_from_array(0,@recent_dates);
+  $values{acquisition_date} = random_string_from_array(0,@recent_dates);
   $values{age_at_purchase} = random_integer(1,20);
   $values{pox_vaccine_yr1} = 'NULL',
   $values{pox_vaccine_yr2} = 'NULL',
@@ -167,14 +167,14 @@ sub dummy_livestock_tracking {
   $values{separate_during_pregnancy} = '"'.random_from_array(0,@yes_no_na).'"';
   $values{miscarriage} = $miscarriage = '"'.random_from_array(0,@yes_no).'"';
   if ($miscarriage eq 'Y') {$values{miscarriage} = 'bad'};
-  $values{delivery_date} = random_from_array(0,@recent_dates);
+  $values{delivery_date} = random_string_from_array(0,@recent_dates);
   $values{num_kids_m} = random_integer(0,4);
   $values{num_kids_f} = random_integer(1,4);
-  $values{death} = random_from_array(40,@recent_dates);
+  $values{death} = random_string_from_array(40,@recent_dates);
   if ($values{death} ne 'NULL') {
     $values{reason_for_death} = random_string_from_array(0,"old","sick","accident");
   }
-  $values{sold} = random_from_array(30,@recent_dates);
+  $values{sold} = random_string_from_array(30,@recent_dates);
   if ($values{sold} ne 'NULL') {
     $values{sale_price} = random_integer(1,100);
   }
