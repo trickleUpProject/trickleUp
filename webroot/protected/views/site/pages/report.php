@@ -40,7 +40,22 @@ selectData(0);
             google.load('visualization', '1.0', {'packages':['corechart']});
             google.setOnLoadCallback(drawChart);
 
-            function drawChart() {
+            function drawChart(data, options) {
+                var chart = new google.visualization.ComboChart(
+                    document.getElementById('chart_div'));
+                chart.draw(data, options);
+            }
+            function setChart() {
+                var data = google.visualization.arrayToDataTable([
+                    
+                ]);
+                var options = {
+                    
+                };
+            drawChart(data, options);
+            }
+
+            /**function drawChart() {
                 var data = google.visualization.arrayToDataTable([
                     ["Month", "USA", "ABC", "Average"],
                     ["03", 112, 118, 115],
@@ -81,6 +96,10 @@ selectData(0);
                 document.getElementById('chart_div'));
             chart.draw(data, options);
             }
+
+            function test() {
+                alert("test");
+            }**/
                 
 
         </script>
@@ -102,25 +121,31 @@ selectData(0);
   <p onclick="selectData(3)" id="data3" class="unselectedMenuItem">Return on Investement</p>
   <p onclick="selectData(4)" id="data4" class="unselectedMenuItem">Livestock Mortality Rate</p>
 </td>
-<td class="rightColumn"> <strong>During:</strong>
-<select>
-  <option>This quarter</option>
-  <option>Last quarter</option>
-  <option>Last 3 quarters</option>
-  <option>This year</option>
-  <option>Last Year</option>
-  <option>All time</option>
-</select>
-  |
-  <strong>Filter by:</strong>
-  <select>
-  <option>Participants</option>
-    <option>Staff</option>
+<td class="rightColumn"> 
 
-</select> | <strong>Individual:</strong>
-<select>
-  <option>VIEW ALL</option>
-</select>
+<form name="report" action=''> 
+    <strong>During:</strong>
+    <select>
+      <option value='0'>This quarter</option>
+      <option value='1'>Last quarter</option>
+      <option value='2'>Last 3 quarters</option>
+      <option value='3'>This year</option>
+      <option value='7'>Last Year</option>
+      <option value='all'>All time</option>
+    </select>
+      |
+      <strong>Filter by:</strong>
+      <select>
+      <option>Participants</option>
+        <option>Staff</option>
+
+    </select> | <strong>Individual:</strong>
+    <select>
+      <option>VIEW ALL</option>
+    </select>
+
+    <input type='button' value='View' onclick="test()"/>
+</form>
   
    <hr>
    
