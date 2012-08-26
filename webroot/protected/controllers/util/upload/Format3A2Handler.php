@@ -21,10 +21,11 @@ class Format3A2Handler extends ExcelFormatHandler {
     // special methods called typically only via reflection (below), 
     //  when there's no one-to-one relationship btw fieldName and modelField
     
-    private function compound_handleMiscarriageAndReason($args /* $inst, $fieldVal */) {
+    public function compound_handleMiscarriageAndReason($args /* $inst, $fieldVal */) {
         $inst = $args[0];
         $fieldVal = $args[1];
         list($miscarriage, $reason) = split("&", $fieldVal);
+        Yii::log("miscarriage=". $miscarriage . "; reason=" . $reason, 'info', "");
         $miscarriage = trim($miscarriage);
         if($miscarriage != 'Y' && $miscarriage != 'N') {
             Yii::log("miscarriage value neither 'Y' nor 'N'", 'error', "");
@@ -34,7 +35,7 @@ class Format3A2Handler extends ExcelFormatHandler {
         $inst->miscarriage_reason = $reason;
     }
     
-    private function compound_handleNumKidsBornMF($args /* $inst, $fieldVal */) {
+    public function compound_handleNumKidsBornMF($args /* $inst, $fieldVal */) {
         $inst = $args[0];
         $fieldVal = $args[1];
         list($numKidsM, $numKidsF) = split("|", $fieldVal);
@@ -42,7 +43,7 @@ class Format3A2Handler extends ExcelFormatHandler {
         $inst->num_kids_f = intval($numKidsF);
     }
     
-    private function compound_handleDeathAndReason($args /* $inst, $fieldVal */) {
+    public function compound_handleDeathAndReason($args /* $inst, $fieldVal */) {
         $inst = $args[0];
         $fieldVal = $args[1];
         list($death, $reason) = split("&", $fieldVal);
@@ -56,7 +57,7 @@ class Format3A2Handler extends ExcelFormatHandler {
         $inst->reason_for_death = $reason;
     }
     
-    private function compound_handleSoldSalePrice($args /* $inst, $fieldVal */) {
+    public function compound_handleSoldSalePrice($args /* $inst, $fieldVal */) {
         $inst = $args[0];
         $fieldVal = $args[1];
         list($sold, $salePrice) = split("&", $fieldVal);
@@ -96,6 +97,7 @@ class Format3A2Handler extends ExcelFormatHandler {
         $highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumn); // e.g. 5
         
         $instances = array();
+        Yii::log("rc: instances-count: '". count($instances) . "'", 'info', "");
         
         $tmpLivestockNum = 1;
         
@@ -105,24 +107,28 @@ class Format3A2Handler extends ExcelFormatHandler {
              
             Yii::log("handling row " . $row, 'info', "");
             $inst = null;
+            $fieldName = null;
+            $modelField = null;
+            $propToSet = null;
+            $compoundFieldHandlerName = null;
+            
+            Yii::log("rc: row: '". $row . "'", 'info', "");
+            Yii::log("rc: instances-count: '". count($instances) . "'", 'info', "");
             
             if($row == 4) {
                 for ($col = 1; $col < $highestColumnIndex; $col++) {
                     $bizNum = $objWorksheet->getCellByColumnAndRow($col, $row)->getValue();
                     $inst = new LivestockTracking;
-                    $inst->business_number = $bizNum;
+                    $inst->setAttribute('business_number', $bizNum);
                     $instances[] = $inst;
-                    //$inst = null;
+                    Yii::log("rc: instances-count: '". count($instances) . "'", 'info', "");
                 }
             } else {
                 
-                $fieldName = null;
-                $modelField = null;
-                $propToSet = null;
-                $compoundFieldHandlerName = null;
-                
                 for ($col = 0; $col < ($highestColumnIndex-1); $col++) {
-
+                    
+                    Yii::log("rc: col: '". $col . "'", 'info', "");
+                    
                     if($col == 0) {
                         $fieldName = $objWorksheet->getCellByColumnAndRow($col, $row)->getValue();
                         Yii::log("fieldName: '". $fieldName . "'", 'info', "");
@@ -140,40 +146,42 @@ class Format3A2Handler extends ExcelFormatHandler {
                             }
                         }
                     } else {
+                        Yii::log("rc: seeking instance: '". $col . "'", 'info', "");
                         $inst = $instances[$col];
                         $fieldVal = $objWorksheet->getCellByColumnAndRow($col, $row)->getValue();
                         
                         if($compoundFieldHandlerName != null) {
+                            Yii::log("setting fieldVal' . $fieldVal . ' using: '". $compoundFieldHandlerName . "'", 'info', "");
                             $reflectionMethod = new ReflectionMethod('Format3A2Handler', $compoundFieldHandlerName);
                             $reflectionMethod->invokeArgs($this, array($inst, $fieldVal));
-                            Yii::log("setting fieldVal' . $fieldVal . ' using: '". $compoundFieldHandlerName . "'", 'info', "");
-                            
                         } else {
-                            //$propToSet->setValue($inst, $fieldVal);
-                            $inst->setAttribute($modelField, $fieldVal);
                             Yii::log("setting fieldVal' . $fieldVal . ' on modelField: '". $modelField . "'", 'info', "");
+                            $inst->setAttribute($modelField, $fieldVal);
                         }
                     }
                     
-                    if($inst != null) {
+                    if($col > 0 && $inst != null) {
                         //TODO: remove these: temporary, because NOT NULL
                         $inst->participant_name='Some Participant Name - ' . $tmpLivestockNum;
                         $inst->year = 2012;
+                        $inst->quarter = 1;
+                        $inst->month = 1;
                         $inst->livestock_number = $tmpLivestockNum++;
                         $inst->livestock_type = 'pig'; // relates to which sheet is current
                         
+                        Yii::log("rc: saving inst with bizNum: " . $inst->getAttribute('business_number') . 
+                            " row=" . $row . "; col=" . $col, 'info', "");
                         $inst->save();
+                        
+                        $fieldName = null;
+                        //$modelField = null;
+                        $propToSet = null;
+                        $compoundFieldHandlerName = null;
+                        $inst = null;
                     }
                 }
                 
-                //if($propToSet == null) continue;
-                
-                $fieldName = null;
-                $modelField = null;
-                $propToSet = null;
-                $compoundFieldHandlerName = null;
-                
-                if(++$tmpItrCount == 2) break;
+                //if(++$tmpItrCount == 5) break;
             }
         }
     }

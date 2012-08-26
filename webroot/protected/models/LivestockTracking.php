@@ -159,4 +159,10 @@ class LivestockTracking extends CActiveRecord
 			'criteria'=>$criteria,
 		));
 	}
+	
+	public function primaryKey()
+	{
+	    return array('business_number', 'year', 'quarter', 'month', 'livestock_number');
+	}
+	
 }
