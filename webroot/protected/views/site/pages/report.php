@@ -57,7 +57,7 @@ selectData(0);
                 ]);
             var options = {
                 title:"",
-                width:600,
+                width:700,
                 height:350,
                 vAxis:{title:"Input Cost (in Rs.)"},
                 hAxis:{title:"Quarter"},
@@ -67,8 +67,13 @@ selectData(0);
             var chart = new google.visualization.ComboChart(
                 document.getElementById('chart_div'));
             chart.draw(data, options);
+			
+					//enable during dropdown
+					  document.getElementById('during').style.visibility='visible';  
+
             }
 
+//
             function drawMortality() {
                 var data = google.visualization.arrayToDataTable([
                     ["Quarter", "Cow/Sheep Mortality", "Pig Mortality"],
@@ -89,6 +94,8 @@ selectData(0);
             var chart = new google.visualization.ComboChart(
                 document.getElementById('chart_div'));
             chart.draw(data, options);
+			
+			
             }
 	//		
 	function drawMortalityLine() {
@@ -114,6 +121,10 @@ selectData(0);
 
         var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
         chart.draw(data, {displayAnnotations: true});
+		
+		//disable during dropdown
+		  document.getElementById('during').style.visibility='hidden';  
+
 		
       }
                 
@@ -141,7 +152,7 @@ selectData(0);
 
 <form name="report" action=''> 
 <td class="rightColumn"> <strong>During:</strong>
-<select>
+<select id="during">
   <option>This quarter</option>
   <option>Last quarter</option>
   <option>This year</option>
@@ -164,7 +175,7 @@ selectData(0);
   
    <hr>
    
-   <div id="chart_div" style='width: 700px; height: 240px;'>
+   <div id="chart_div" style='width: 700px; height: 350px;'>
    
    </div>
  
