@@ -7,6 +7,7 @@ our %participant_name = (
 our @business_numbers = keys %participant_name;
 our @recent_dates = ('2012-08-20', '2012-08-21', '2012-08-22',
  '2012-01-20', '2012-02-21', '2012-03-22',
+ '2012-04-20', '2012-06-21', '2012-04-22',
  '2012-01-17', '2012-02-04', '2012-03-05',
  '2012-03-20', '2012-05-21', '2012-07-22');
 our %generate_table_sub;
@@ -267,7 +268,7 @@ print "use trickleup;\n\n";
 
 random_table_rows('agri_payment',1000);
 random_table_rows('agri_receipt',1000);
-random_table_rows('livestock',1000);
-random_table_rows('livestock_tracking',1000);
+random_table_rows('livestock',2000);
+random_table_rows('livestock_tracking',2000);
 random_table_rows('small_business_payment',1000);
 random_table_rows('small_business_receipt',1000);
