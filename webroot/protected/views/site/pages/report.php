@@ -101,17 +101,31 @@ selectData(0);
 	function drawMortalityLine() {
         var data = new google.visualization.DataTable();
         data.addColumn('date', 'Date');
-        data.addColumn('number', 'Sheep/Cow Mortality');
-        data.addColumn('number', 'Pig Deaths');
-        data.addRows([
-          [new Date(2008, 1 ,1), .04, .08],
-          [new Date(2008, 2 ,2), null, .05],
-          [new Date(2008, 3 ,3), .10, null],
-          [new Date(2008, 4 ,4), .03, .05],
-          [new Date(2008, 5 ,5), .05, .06],
-          [new Date(2008, 6 ,6), .08, .02]
-        ]);
-		
+        data.addColumn('number', 'Pig Mortality');
+        data.addColumn('number', 'Sheep/Goat Mortality');
+        <?php 
+
+$db=mysql_connect('localhost', 'root', 'root') or die('Could not connect');
+mysql_select_db('trickleup', $db) or die('could not get to db');
+
+$result = mysql_query("select * from (select  year, month ,count(*)  pig from trickleup.livestock_tracking where death is not null and livestock_type = 'pig' group by year, month ,livestock_type ) as g, (select  year, month ,count(*) goat from trickleup.livestock_tracking where death is not null and livestock_type = 'goat/sheep' group by year, month ,livestock_type) as p where g.year = p.year and g.month = p.month;") or die('Could not query');
+
+if(mysql_num_rows($result)){
+
+ while($row=mysql_fetch_row($result)){
+?>
+        
+        data.addRow([new Date(<?php echo $row[0]; ?>, <?php echo $row[1]; ?> ,1), <?php echo $row[2]; ?>, <?php echo $row[5]; ?>]);
+<?php
+}
+
+}
+
+
+
+mysql_close($db);
+
+?>		
 		//trying to formate numbers as percentages here... but not working...
 		var formatter = new google.visualization.NumberFormat({ 
 		  pattern: '#%', 
@@ -153,11 +167,11 @@ selectData(0);
 <form name="report" action=''> 
 <td class="rightColumn"> <strong>During:</strong>
 <select id="during">
-  <option>This quarter</option>
-  <option>Last quarter</option>
-  <option>This year</option>
-  <option>Last Year</option>
-  <option>All time</option>
+  <option value='1'>This quarter</option>
+  <option value='2'>Last quarter</option>
+  <option value='4'>This year</option>
+  <option value='8'>Last Year</option>
+  <option value='all'>All time</option>
 </select>
   </div>
   <strong>Filter by:</strong>

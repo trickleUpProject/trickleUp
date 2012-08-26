@@ -33,13 +33,13 @@ sub random_from_array {
     my $check = random_integer(1,100);
     if ($nullable < $check) {return 'NULL'}
   }
-  $array[int rand($#array)];
+  $array[int rand(@array)];
 }
 
 sub random_string_from_array {
   my $nullable = shift;
   my @array = @_;
-  my $value = $array[int rand($#array)];
+  my $value = $array[int rand(@array)];
   if ($nullable) {
     if (int(rand(2))) { return 'NULL'};
   }
