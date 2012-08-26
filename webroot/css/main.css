@@ -21,6 +21,7 @@ body
 	padding: 0;
 	background-color:#922722;
 	border-top: 3px solid #2d8186;
+	color:#FFF;
 }
 
 #content
@@ -230,9 +231,9 @@ div.search-form
 }
 
 .leftColumn{
-background-color:#CCC;
+background-color:#84d2d7;
 padding:15px;
-margin:15px;
+margin:0px;
 }
 
 .rightColumn{
@@ -245,15 +246,18 @@ margin:15px;}
 
 .logo{
 margin:15px;
+color:#FFF;
 }
 
 .selectedMenuItem{
 background-color:#FFF;
-font-size:12px;
-    cursor: hand;
+font-size:13px;
+cursor: hand;
+padding:10px;
 
 }
 
 .unselectedMenuItem {
     cursor: hand;
+	padding:10px;
 }

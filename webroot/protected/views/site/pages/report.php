@@ -26,7 +26,12 @@ function selectData(id)
 	//alert("select data" + id);
 	
 	//UPDATE GRAPH
-    redraw();
+	if(id == 4){
+    	drawMortalityLine();
+	}
+	else if(id == 0){
+		drawChart();	
+	}
 	
 }
 
@@ -38,49 +43,104 @@ selectData(0);
         <script type="text/javascript">
 
             google.load('visualization', '1.0', {'packages':['corechart']});
+			  google.load("visualization", "1", {packages: ['annotatedtimeline']});
+
             google.setOnLoadCallback(drawChart);
 
             function drawChart() {
                 var data = google.visualization.arrayToDataTable([
-                    ["Month", "USA", "ABC", "Average"],
-                    ["03", 112, 118, 115],
-                    ["04", 212, 312, 262],
-                    ["05", 200, 100, 150]
+                    ["Quarter", "Corn Flower", "Cucumber", "Goat/Sheep", "Paddy", "Pig", "Pisciculture", "Spinach"],
+                    ["Q1", 4000, 2000, 7000, 4000, 2000, 7000, 7000],
+                    ["Q2", 600, 2500, 1000, 4000, 2000, 7000, 4000],
+                    ["Q3", 600, 2500, 1000, 5000, 2500, 2600, 5000], 
+					["Q4", 5000, 2500, 2600, 4000, 2000, 7000, 4000]
                 ]);
             var options = {
-                title:"Stuff Over Time",
-                width:600,
+                title:"",
+                width:700,
                 height:350,
-                vAxis:{title:"Stuff"},
-                hAxis:{title:"Time"},
+                vAxis:{title:"Input Cost (in Rs.)"},
+                hAxis:{title:"Quarter"},
                 seriesType:"bars",
-                series:{2:{type:"line"}}
+              //  series:{2:{type:"line"}}
             };
             var chart = new google.visualization.ComboChart(
                 document.getElementById('chart_div'));
             chart.draw(data, options);
+			
+					//enable during dropdown
+					  document.getElementById('during').style.visibility='visible';  
+
             }
 
-            function redraw() {
+//
+            function drawMortality() {
                 var data = google.visualization.arrayToDataTable([
-                    ["Month", "USA", "ABC", "Average"],
-                    ["03", 12, 18, 15],
-                    ["04", 12, 12, 62],
-                    ["05", 10, 10, 50]
+                    ["Quarter", "Cow/Sheep Mortality", "Pig Mortality"],
+                    ["Q1", 12, 18],
+                    ["Q2", 12, 12],
+                    ["Q3", 10, 10],
+					["Q3", 5, 8]
                 ]);
             var options = {
-                title:"Stuff Over Time",
+                title:"",
                 width:600,
                 height:350,
-                vAxis:{title:"Stuff"},
-                hAxis:{title:"Time"},
+                vAxis:{title:"Mortality Rate %"},
+                hAxis:{title:"Quarter"},
                 seriesType:"bars",
                 series:{2:{type:"line"}}
             };
             var chart = new google.visualization.ComboChart(
                 document.getElementById('chart_div'));
             chart.draw(data, options);
+			
+			
             }
+	//		
+	function drawMortalityLine() {
+        var data = new google.visualization.DataTable();
+        data.addColumn('date', 'Date');
+        data.addColumn('number', 'Pig Mortality');
+        data.addColumn('number', 'Sheep/Goat Mortality');
+        <?php 
+
+$db=mysql_connect('localhost', 'root', 'root') or die('Could not connect');
+mysql_select_db('trickleup', $db) or die('could not get to db');
+
+$result = mysql_query("select * from (select  year, month ,count(*)  pig from trickleup.livestock_tracking where death is not null and livestock_type = 'pig' group by year, month ,livestock_type ) as g, (select  year, month ,count(*) goat from trickleup.livestock_tracking where death is not null and livestock_type = 'goat/sheep' group by year, month ,livestock_type) as p where g.year = p.year and g.month = p.month;") or die('Could not query');
+
+if(mysql_num_rows($result)){
+
+ while($row=mysql_fetch_row($result)){
+?>
+        
+        data.addRow([new Date(<?php echo $row[0]; ?>, <?php echo $row[1]; ?> ,1), <?php echo $row[2]; ?>, <?php echo $row[5]; ?>]);
+<?php
+}
+
+}
+
+
+
+mysql_close($db);
+
+?>		
+		//trying to formate numbers as percentages here... but not working...
+		var formatter = new google.visualization.NumberFormat({ 
+		  pattern: '#%', 
+		  fractionDigits: 2
+		});
+		formatter.format(data, 2); // Apply formatter to first column.
+
+        var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
+        chart.draw(data, {displayAnnotations: true});
+		
+		//disable during dropdown
+		  document.getElementById('during').style.visibility='hidden';  
+
+		
+      }
                 
 
         </script>
@@ -102,29 +162,34 @@ selectData(0);
   <p onclick="selectData(3)" id="data3" class="unselectedMenuItem">Return on Investement</p>
   <p onclick="selectData(4)" id="data4" class="unselectedMenuItem">Livestock Mortality Rate</p>
 </td>
+<td class="rightColumn"> 
+
+<form name="report" action=''> 
 <td class="rightColumn"> <strong>During:</strong>
-<select>
-  <option>This quarter</option>
-  <option>Last quarter</option>
-  <option>Last 3 quarters</option>
-  <option>This year</option>
-  <option>Last Year</option>
-  <option>All time</option>
+<select id="during">
+  <option value='1'>This quarter</option>
+  <option value='2'>Last quarter</option>
+  <option value='4'>This year</option>
+  <option value='8'>Last Year</option>
+  <option value='all'>All time</option>
 </select>
-  |
+  </div>
   <strong>Filter by:</strong>
   <select>
   <option>Participants</option>
     <option>Staff</option>
 
-</select> | <strong>Individual:</strong>
-<select>
-  <option>VIEW ALL</option>
-</select>
+    </select> | <strong>Individual:</strong>
+    <select>
+      <option>VIEW ALL</option>
+    </select>
+
+    <input type='button' value='View' onclick="test()"/>
+</form>
   
    <hr>
    
-   <div id="chart_div">
+   <div id="chart_div" style='width: 700px; height: 350px;'>
    
    </div>
  

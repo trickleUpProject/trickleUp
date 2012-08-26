@@ -23,19 +23,19 @@
 <div class="container" id="page">
 
 	<div id="header">
-		<div id="logo"><img src="images/logo_trickleup.gif" width="151" height="35" alt="TrickleUp" />
+		<div id="logo"><img src="images/logo_trickleup.gif" width="151" height="35" alt="TrickleUp" /> data manager
 </div>
 	</div><!-- header -->
 
 	<div id="mainmenu">
 		<?php $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
-				array('label'=>'Home', 'url'=>array('/site/index')),
-				array('label'=>'About', 'url'=>array('/site/page', 'view'=>'about')),
-				array('label'=>'Reports', 'url'=>array('/site/page', 'view'=>'report')),
-				array('label'=>'Contact', 'url'=>array('/site/contact')),
 				array('label'=>'Login', 'url'=>array('/site/login'), 'visible'=>Yii::app()->user->isGuest),
-				array('label'=>'Logout ('.Yii::app()->user->name.')', 'url'=>array('/site/logout'), 'visible'=>!Yii::app()->user->isGuest)
+				array('label'=>'Logout ('.Yii::app()->user->name.')', 'url'=>array('/site/logout'), 'visible'=>!Yii::app()->user->isGuest),
+				array('label'=>'View Reports', 'url'=>array('/site/page', 'view'=>'report')),
+				array('label'=>'Upload Data', 'url'=>array('/site/index')),
+				array('label'=>'About', 'url'=>array('/site/page', 'view'=>'about')),
+				array('label'=>'Contact', 'url'=>array('/site/contact'))
 			),
 		)); ?>
 	</div><!-- mainmenu -->
