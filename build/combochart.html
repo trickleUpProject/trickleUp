@@ -1,0 +1,62 @@
+<html>
+    <head>
+        <title>Google Chart combochart</title>
+
+        <script type="text/javascript" src=
+            "https://www.google.com/jsapi"></script>
+        <script type="text/javascript">
+
+            google.load('visualization', '1.0', {'packages':['corechart']});
+            google.setOnLoadCallback(drawChart);
+
+            function drawChart() {
+                var data = google.visualization.arrayToDataTable([
+                    ["Month", "USA", "ABC", "Average"],
+                    ["03", 112, 118, 115],
+                    ["04", 212, 312, 262],
+                    ["05", 200, 100, 150]
+                ]);
+            var options = {
+                title:"Stuff Over Time",
+                width:600,
+                height:350,
+                vAxis:{title:"Stuff"},
+                hAxis:{title:"Time"},
+                seriesType:"bars",
+                series:{2:{type:"line"}}
+            };
+            var chart = new google.visualization.ComboChart(
+                document.getElementById('chart_div'));
+            chart.draw(data, options);
+            }
+
+            function redraw() {
+                var data = google.visualization.arrayToDataTable([
+                    ["Month", "USA", "ABC", "Average"],
+                    ["03", 12, 18, 15],
+                    ["04", 12, 12, 62],
+                    ["05", 10, 10, 50]
+                ]);
+            var options = {
+                title:"Stuff Over Time",
+                width:600,
+                height:350,
+                vAxis:{title:"Stuff"},
+                hAxis:{title:"Time"},
+                seriesType:"bars",
+                series:{2:{type:"line"}}
+            };
+            var chart = new google.visualization.ComboChart(
+                document.getElementById('chart_div'));
+            chart.draw(data, options);
+            }
+                
+
+        </script>
+
+    </head>
+    <body>
+        <div id='chart_div'></div>
+        <p onclick="redraw()">click here to redraw</p>
+    </body>
+</html>
