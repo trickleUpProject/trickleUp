@@ -182,6 +182,27 @@ mysql_close($db);
     </select> | <strong>Individual:</strong>
     <select>
       <option>VIEW ALL</option>
+
+        <?php 
+$db2=mysql_connect('localhost', 'root', 'root') or die('Could not connect');
+mysql_select_db('trickleup', $db2) or die('could not get to db');
+
+$result2 = mysql_query("select distinct business_number, participant_name from livestock_tracking;") or die('Could not query');
+
+if(mysql_num_rows($result2)){
+
+ while($row2=mysql_fetch_row($result2)){
+   echo "<option value = ";
+   echo $row2[0];
+   echo ">";
+   echo $row2[0];
+   echo "-";
+   echo $row2[1];
+   echo "<option>";
+  }
+}
+?>
+        
     </select>
 
     <input type='button' value='View' onclick="test()"/>
