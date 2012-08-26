@@ -2,7 +2,8 @@ drop table if exists trickleup.livestock;
 
 create table trickleup.livestock(
   business_number int(11) NOT NULL,
-  participant_name varchar(100) null,
+  participant_name varchar(100) not null,
+  staff                varchar(100) null,
   month        INT NOT NULL,
   year         INT NOT NULL,
   quarter      INT NULL,

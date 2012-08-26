@@ -3,6 +3,7 @@ drop table if exists trickleup.small_business_receipt;
 create table trickleup.small_business_receipt (
     business_number int(11) NOT NULL,
     participant_name      varchar(100) not null,
+    staff                 varchar(100) null,
     month                 INT NOT NULL,
     year                  INT NOT NULL,
     quarter               INT NULL,

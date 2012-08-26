@@ -19,5 +19,5 @@ create table trickleup.agriculture_report (
  quantity_sold         int,
  amount_from_sale      int,
  value_produced        int,
- primary key (agriculture_report_id),
+ primary key (agriculture_report_id)
 );
