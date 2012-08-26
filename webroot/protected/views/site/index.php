@@ -4,17 +4,26 @@
 $this->pageTitle=Yii::app()->name;
 ?>
 
-<h1>Welcome to <i><?php echo CHtml::encode(Yii::app()->name); ?></i></h1>
+<br/>
+<a href="<?php echo "index.php?r=upload/uploadExcel" ?>">Upload an Excel-file</a>
+<br/><br/>
 
-<p>Congratulations! You have successfully created your Yii application.</p>
-
-<p>You may change the content of this page by modifying the following two files:</p>
-<ul>
-	<li>View file: <code><?php echo __FILE__; ?></code></li>
-	<li>Layout file: <code><?php echo $this->getLayoutFile('main'); ?></code></li>
-</ul>
-
-<p>For more details on how to further develop this application, please read
-the <a href="http://www.yiiframework.com/doc/">documentation</a>.
-Feel free to ask in the <a href="http://www.yiiframework.com/forum/">forum</a>,
-should you have any questions.</p>
+<?php
+    Yii::import('application.vendors.PHPExcel',true);
+    $objReader = PHPExcel_IOFactory::createReader('Excel2007');
+    $objPHPExcel = $objReader->load("/Users/larrylefever/Downloads/TrickleUp/Format 3A-2-test.xlsx"); //$file --> your filepath and filename
+    
+    $objWorksheet = $objPHPExcel->getActiveSheet();
+    $highestRow = $objWorksheet->getHighestRow(); // e.g. 10
+    $highestColumn = $objWorksheet->getHighestColumn(); // e.g 'F'
+    $highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumn); // e.g. 5
+    echo '<table style="border: solid 1px">' . "\n";
+    for ($row = 2; $row <= $highestRow; ++$row) {
+      echo '<tr>' . "\n";
+      for ($col = 0; $col <= $highestColumnIndex; ++$col) {
+        echo '<td style="border: solid 1px">' . $objWorksheet->getCellByColumnAndRow($col, $row)->getValue() . '</td>' . "\n";
+      }
+      echo '</tr>' . "\n";
+    }
+    echo '</table>' . "\n";
+?>
