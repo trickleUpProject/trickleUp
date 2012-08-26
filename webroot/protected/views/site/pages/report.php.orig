@@ -47,7 +47,22 @@ selectData(0);
 
             google.setOnLoadCallback(drawChart);
 
-            function drawChart() {
+            function drawChart(data, options) {
+                var chart = new google.visualization.ComboChart(
+                    document.getElementById('chart_div'));
+                chart.draw(data, options);
+            }
+            function setChart() {
+                var data = google.visualization.arrayToDataTable([
+                    
+                ]);
+                var options = {
+                    
+                };
+            drawChart(data, options);
+            }
+
+            /**function drawChart() {
                 var data = google.visualization.arrayToDataTable([
                     ["Quarter", "Corn Flower", "Cucumber", "Goat/Sheep", "Paddy", "Pig", "Pisciculture", "Spinach"],
                     ["Q1", 4000, 2000, 7000, 4000, 2000, 7000, 7000],
@@ -90,6 +105,7 @@ selectData(0);
                 document.getElementById('chart_div'));
             chart.draw(data, options);
             }
+<<<<<<< HEAD
 	//		
 	function drawMortalityLine() {
         var data = new google.visualization.DataTable();
@@ -116,6 +132,12 @@ selectData(0);
         chart.draw(data, {displayAnnotations: true});
 		
       }
+=======
+
+            function test() {
+                alert("test");
+            }**/
+>>>>>>> 59aecb3a400b66efad96d6a152c26a98fb3c35c9
                 
 
         </script>
@@ -137,6 +159,9 @@ selectData(0);
   <p onclick="selectData(3)" id="data3" class="unselectedMenuItem">Return on Investement</p>
   <p onclick="selectData(4)" id="data4" class="unselectedMenuItem">Livestock Mortality Rate</p>
 </td>
+<<<<<<< HEAD
+<td class="rightColumn"> <div id="during" style=""><strong>During:</strong>
+=======
 <<<<<<< HEAD
 <td class="rightColumn"> 
 
@@ -162,6 +187,7 @@ selectData(0);
     </select>
 =======
 <td class="rightColumn"> <strong>During:</strong>
+>>>>>>> 59aecb3a400b66efad96d6a152c26a98fb3c35c9
 <select>
   <option>This quarter</option>
   <option>Last quarter</option>
@@ -174,6 +200,7 @@ selectData(0);
   <select>
   <option>Participants</option>
     <option>Staff</option>
+>>>>>>> 10dcb6fda984c7f096046924ac822bb9e3dbe308
 
     <input type='button' value='View' onclick="test()"/>
 </form>
