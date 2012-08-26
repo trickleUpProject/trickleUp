@@ -92,7 +92,6 @@ selectData(0);
 
 <body>
 <div class="logo">
-<img src="images/logo_trickleup.gif" width="151" height="35" alt="TrickleUp" />
 </div>
 <table width="100%" id="fullheight">
   <tr>
@@ -103,28 +102,32 @@ selectData(0);
   <p onclick="selectData(3)" id="data3" class="unselectedMenuItem">Return on Investement</p>
   <p onclick="selectData(4)" id="data4" class="unselectedMenuItem">Livestock Mortality Rate</p>
 </td>
-<td class="rightColumn">
-  During:
+<td class="rightColumn"> <strong>During:</strong>
+<select>
+  <option>This quarter</option>
+  <option>Last quarter</option>
+  <option>Last 3 quarters</option>
+  <option>This year</option>
+  <option>Last Year</option>
+  <option>All time</option>
+</select>
+  |
+  <strong>Filter by:</strong>
   <select>
-    <option>This quarter</option>
-    <option>Last quarter</option>
-    <option>Last 3 quarters</option>
-    <option>This year</option>
-    <option>Last Year</option>
-    <option>All time</option>
-    </select>
+  <option>Participants</option>
+    <option>Staff</option>
+
+</select> | <strong>Individual:</strong>
+<select>
+  <option>VIEW ALL</option>
+</select>
   
-  
-  Filter by: 
-  <input type="radio" name="group1" value="pp"> 
-  Participants
-  <input type="radio" name="group1" value="staff" checked> Staff<br>
    <hr>
    
    <div id="chart_div">
    
    </div>
-   
+ 
    </td>
 </tr>
 </table>

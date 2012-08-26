@@ -23,7 +23,8 @@
 <div class="container" id="page">
 
 	<div id="header">
-		<div id="logo"><?php echo CHtml::encode(Yii::app()->name); ?></div>
+		<div id="logo"><img src="images/logo_trickleup.gif" width="151" height="35" alt="TrickleUp" />
+</div>
 	</div><!-- header -->
 
 	<div id="mainmenu">

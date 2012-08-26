@@ -19,7 +19,8 @@ body
 {
 	margin: 0;
 	padding: 0;
-	border-top: 3px solid #C9E0ED;
+	background-color:#922722;
+	border-top: 3px solid #2d8186;
 }
 
 #content
@@ -226,4 +227,33 @@ div.search-form
 .operations li a:hover
 {
 	background: #80CFFF;
+}
+
+.leftColumn{
+background-color:#CCC;
+padding:15px;
+margin:15px;
+}
+
+.rightColumn{
+background-color:#FFF;
+padding:15px;
+margin:15px;}
+
+#fullheight{height:100%}
+
+
+.logo{
+margin:15px;
+}
+
+.selectedMenuItem{
+background-color:#FFF;
+font-size:12px;
+    cursor: hand;
+
+}
+
+.unselectedMenuItem {
+    cursor: hand;
 }
