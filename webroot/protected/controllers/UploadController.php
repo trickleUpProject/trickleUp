@@ -12,7 +12,8 @@ class UploadController extends Controller
     {
         Yii::import('application.controllers.util.upload.*',true);
         
-        $this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler();
+        //$this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler();
+        $this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler2();
     }
     
 	/**
@@ -44,14 +45,14 @@ class UploadController extends Controller
 	        $model->attributes=$_POST['UploadForm'];
 	        $model->file = CUploadedFile::getInstance($model, 'file');
 	        
-	        Yii::log('fileName: ' + $model->file->name, 'info', "");
+	        Yii::log('fileName: ' . $model->file->name, 'info', "");
 	        
 	        $fileStoredLoc = $docRoot . '/' . $model->file->name;
-	        Yii::log('fileStoredLoc: ' + $fileStoredLoc, 'info', "");
+	        Yii::log('fileStoredLoc: ' . $fileStoredLoc, 'info', "");
 	        $model->file->saveAs('/' . $fileStoredLoc);
 	        
 	        $fileExt = substr($fileStoredLoc, (strlen($fileStoredLoc) - 3));
-	        Yii::log('fileExt: ' + $fileExt, 'info', "");
+	        Yii::log('fileExt: ' . $fileExt, 'info', "");
 	        
 	        Yii::import('application.vendors.PHPExcel',true);
 	        
