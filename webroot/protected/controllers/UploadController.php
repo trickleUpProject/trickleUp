@@ -25,6 +25,21 @@ class UploadController extends Controller
 			
 		);
 	}
+	
+	public function actionAjaxReportData() {
+	    
+	    $lsTrackings = LivestockTracking::model()->findAll();
+	    
+	    Yii::log("got LivestockTrackings ...", 'info', "");
+        foreach($lsTrackings as $lsTracking) {
+            Yii::log("livestock_number: " . $lsTracking->livestock_number, 'info', "");
+        };
+        
+	    $this->layout=false;
+	    header('Content-type: application/json');
+	    echo CJavaScript::jsonEncode($lsTrackings);
+	    Yii::app()->end();
+	}
 
 	/**
 	 * 

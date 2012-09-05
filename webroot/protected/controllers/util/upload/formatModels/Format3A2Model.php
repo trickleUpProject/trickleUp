@@ -1,6 +1,6 @@
 <?php
 
-class Format3A2Model {
+class Format3A2Model { 
     
     private $cellMap;
     private $dbFieldsForRowNums;

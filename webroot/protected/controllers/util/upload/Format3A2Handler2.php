@@ -34,6 +34,9 @@ class Format3A2Handler2 extends ExcelFormatHandler {
         $cols = $lsIds[0];
         $rows = $lsIds[1]; // expecting only single row, simply based on knowledge of current format
         $row = $rows[0]; // the row the livestock_numbers are in
+        
+        //TODO: set livestock_number with value in "header-column", e.g., "Pig Nos."
+        
         $row++; // the first row of this livestock_number's property-values
         
         $tmpLivestockNum = 0;
