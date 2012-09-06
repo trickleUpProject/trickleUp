@@ -11,6 +11,25 @@
 	@import "/js/jquery-datatables-editable-read-only/media/css/themes/smoothness/jquery-ui-1.7.2.custom.css";
 </style>
 
+<style type="text/css">
+#unsavedChanges {
+    width: 160px; 
+    cursor: pointer; 
+    border: 3px solid black; 
+    text-align:center; 
+    color: blue; 
+    visibility: hidden; 
+    background-color: yellow; 
+    font-weight:bold
+}
+
+#unsavedChanges:hover {
+    color: yellow;
+    background-color: blue
+}
+
+</style>
+
 <script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
 <script src="/js/DataTables-1.9.3/media/js/jquery.dataTables.min.js" type="text/javascript"></script>
 <script src="/js/jquery.jeditable.mini.js" type="text/javascript"></script>
@@ -28,10 +47,18 @@ $(document).ready( function () {
             console.log(msg);
         }
     }
+
+    var formatCols = [
+         'participant_name',
+         'livestock_type',
+         'age_in_months',
+         'weight_kg',
+         'miscarriage'
+    ];
     
     function addTableRow(obj) {
         $("#example").find('tbody')
-        .append($('<tr>')
+        .append($('<tr>')          // TODO: reference formatCols here instead of literally
             .attr('id', obj['livestock_number'])
             .attr('class', 'odd_gradeX')
             .append($('<td>')
@@ -91,22 +118,60 @@ $(document).ready( function () {
         });
     }
 
+    function setHasUnsavedChanges() {
+        $('#unsavedChanges').css('visibility', 'visible');
+    }
+    
+    // TEMPORARY: simulation of client-side persistence for offline-editing
+    var dataById = {};
+    var dirty = {};
+    
     function loadTable(data) {
+        
         log(data);
+
         for(var i = 0; i < data.length; i++) {
-            addTableRow(data[i]);
+            var item = data[i];
+            addTableRow(item);
+            dataById[item['livestock_number']] = item;
         }
+
         $('#example').dataTable().makeEditable({
             //sUpdateURL: "UpdateData.php", //On the code.google.com POST request is not supported so this line is commented out
-            sUpdateURL:function(value, settings) {
+            sUpdateURL: function(value, settings) {
                 return value; //Simulation of server-side response using a callback function
-            }//Remove this line in your code
+            },
+            fnOnEdited: function(result, sOldValue, sNewValue, iRowIndex, iColumnIndex, iRealColumnIndex) {
+
+                log(arguments);
+                
+                var rowData = dataById[iRowIndex];
+                var colName = formatCols[iColumnIndex];
+                rowData[colName] = sNewValue;
+
+                //TODO: use hash instead; key is: {id}_{colName};
+                // so, then, look it up first and update if there, else push;
+                // meanwhile, will have updates stored locally for online editing
+                // and push of updates to server is more efficient (will need to
+                // store this 'dirty' store in client-side persistence too though)
+                dirty.push({
+                    "id": iRowIndex,
+                    "colName": colName,
+                    "value": sNewValue
+                });
+                
+                log('rowData[' + colName + ']: ' + rowData[colName]);
+                setHasUnsavedChanges();
+            }
         });
     }
 
     //loadTable(ary);
     execRemote('/index.php?r=upload/ajaxReportData', loadTable);
-    
+
+    $('#unsavedChanges').click(function() {
+        log('unsavedChanges clicked');
+    });
 
 } );
 
@@ -142,6 +207,12 @@ $(document).ready( function () {
 <?php $this->endWidget(); ?>
 </div><!-- form -->
 
+
+<div id="unsavedChanges">
+    <span id="saveUnsavedChanges">
+        Save Unsaved Changes
+    </span>
+</div>
 
 <div id="container">
 
