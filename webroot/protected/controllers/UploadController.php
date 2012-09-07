@@ -40,6 +40,46 @@ class UploadController extends Controller
 	    echo CJavaScript::jsonEncode($lsTrackings);
 	    Yii::app()->end();
 	}
+	
+	public function actionAjaxReportDataUpdate() {
+	    
+	    //TODO: generalize for all relevant formats (Excel-docs/sheets)
+	    
+	    Yii::log("handling AjaxReportDataUpdate", 'info', "");
+	    Yii::log(print_r($_POST['data'], true), 'info', "");
+	    
+	    $dirties = CJSON::decode($_POST['data'], true);
+	    Yii::log(print_r($dirties, true), 'info', "");
+	    
+	    foreach($dirties as $key => $val) {
+	        
+	        $keyParts = explode("-", $key);
+	        $id = $keyParts[0];
+	        $colName = $keyParts[1];
+	        Yii::log("id=" . $id . "; colName=" . $colName, 'info', "");
+	        
+	        $dirty = $dirties[$key];
+	        
+	        //TODO: determine which Model to use and which col is to be used as its key in this case
+	        $lsTracking = LivestockTracking::model()->find(
+	                        'business_number=:business_number',
+	                        array(':business_number' => $id)
+	        );
+	         
+	        if($lsTracking) {
+	            Yii::log(print_r($dirty['value'], true), 'info', "");
+
+	            $lsTracking->setAttribute($colName, $dirty['value']);
+	            
+	            if(!$lsTracking->save()) {
+	                Yii::log(print_r($lsTracking->getErrors(), true), 'error', "");
+	            }
+	        } else {
+	            Yii::log("couldn't find LivestockingTracking model-instance with business_number: " . $id, 'error', "");
+	        }
+	        
+	    }
+	}
 
 	/**
 	 * 

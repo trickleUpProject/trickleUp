@@ -48,6 +48,9 @@ $(document).ready( function () {
         }
     }
 
+    //TODO: need to set all cells "read-only" that are part of a key in the DB,
+    //  because you're not allowed to change them (in the DB)
+    
     var formatCols = [
          'participant_name',
          'livestock_type',
@@ -102,17 +105,16 @@ $(document).ready( function () {
     ];
 
 
-    function execRemote(/*cmd, dataToPOST,*/ url, callback) {
-        //var data = {cmd: cmd, dataPosted: dataToPOST};
-        //var dataStr = dataToPOST != null ? JSON.stringify(data) : data;
-        //var httpMethod = dataToPOST != null ? "POST" : "GET";
-        var httpMethod = "GET";
+    function execRemote(url, callback, dataToPOST) {
+        var dataStr = dataToPOST != null ? ("data=" + JSON.stringify(dataToPOST)) : dataToPOST;
+        var httpMethod = dataToPOST != null ? "POST" : "GET";
+        //var httpMethod = "GET";
         //var contentTypeVal = dataToPOST != null ? 'text/json': 'application/x-www-form-urlencoded';
-        var contentTypeVal = 'text/json';
+        var contentTypeVal = 'application/x-www-form-urlencoded'; //'text/json';
         $.ajax({
             type: httpMethod,
             url: url,
-            //data: dataStr,
+            data: dataStr,
             success: callback,
             contentType: contentTypeVal
         });
@@ -124,7 +126,7 @@ $(document).ready( function () {
     
     // TEMPORARY: simulation of client-side persistence for offline-editing
     var dataById = {};
-    var dirty = {};
+    var dirties = {}; // to avoid sending entire client-side copy to server for updating
     
     function loadTable(data) {
         
@@ -133,10 +135,12 @@ $(document).ready( function () {
         for(var i = 0; i < data.length; i++) {
             var item = data[i];
             addTableRow(item);
+            // TODO: generalize this: use appropriate key for current format
             dataById[item['livestock_number']] = item;
         }
 
         $('#example').dataTable().makeEditable({
+            
             //sUpdateURL: "UpdateData.php", //On the code.google.com POST request is not supported so this line is commented out
             sUpdateURL: function(value, settings) {
                 return value; //Simulation of server-side response using a callback function
@@ -148,17 +152,18 @@ $(document).ready( function () {
                 var rowData = dataById[iRowIndex];
                 var colName = formatCols[iColumnIndex];
                 rowData[colName] = sNewValue;
-
-                //TODO: use hash instead; key is: {id}_{colName};
-                // so, then, look it up first and update if there, else push;
-                // meanwhile, will have updates stored locally for online editing
-                // and push of updates to server is more efficient (will need to
-                // store this 'dirty' store in client-side persistence too though)
-                dirty.push({
-                    "id": iRowIndex,
-                    "colName": colName,
-                    "value": sNewValue
-                });
+                
+                var key = iRowIndex + "-" + colName;
+                
+                if(dirties[key]) {
+                    dirties[key].value = sNewValue;
+                } else {
+                    dirties[key] = {
+                        "id": iRowIndex,
+                        "colName": colName,
+                        "value": sNewValue
+                    };
+                }
                 
                 log('rowData[' + colName + ']: ' + rowData[colName]);
                 setHasUnsavedChanges();
@@ -169,8 +174,16 @@ $(document).ready( function () {
     //loadTable(ary);
     execRemote('/index.php?r=upload/ajaxReportData', loadTable);
 
+    function handleReportDataUpdateResp(data) {
+        log("handleReportDataUpdateResp");
+        log(data);
+    }
+    
     $('#unsavedChanges').click(function() {
         log('unsavedChanges clicked');
+        log("sending dirties:");
+        log(dirties);
+        execRemote('/index.php?r=upload/ajaxReportDataUpdate', handleReportDataUpdateResp, dirties);
     });
 
 } );
