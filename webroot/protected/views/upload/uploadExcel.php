@@ -12,7 +12,7 @@
 </style>
 
 <style type="text/css">
-#unsavedChanges {
+#saveUnsavedChanges {
     width: 160px; 
     cursor: pointer; 
     border: 3px solid black; 
@@ -23,9 +23,15 @@
     font-weight:bold
 }
 
-#unsavedChanges:hover {
+#saveUnsavedChanges:hover {
     color: yellow;
     background-color: blue
+}
+
+#saveChangesResp {
+    background-color: yellow;
+    color: blue;
+    font-weight:bold;
 }
 
 </style>
@@ -120,8 +126,13 @@ $(document).ready( function () {
         });
     }
 
-    function setHasUnsavedChanges() {
-        $('#unsavedChanges').css('visibility', 'visible');
+    function setHasUnsavedChanges(set) {
+        if(set === true) {
+            $('#saveUnsavedChanges').css('visibility', 'visible');
+            $('#saveChangesResp').html('');
+        } else {
+            $('#saveUnsavedChanges').css('visibility', 'hidden');
+        }
     }
     
     // TEMPORARY: simulation of client-side persistence for offline-editing
@@ -166,7 +177,7 @@ $(document).ready( function () {
                 }
                 
                 log('rowData[' + colName + ']: ' + rowData[colName]);
-                setHasUnsavedChanges();
+                setHasUnsavedChanges(true);
             }
         });
     }
@@ -177,10 +188,18 @@ $(document).ready( function () {
     function handleReportDataUpdateResp(data) {
         log("handleReportDataUpdateResp");
         log(data);
+
+        if(data.result && data.result == "Changes Saved") { //TODO: avoid bare literal here
+            $('#saveChangesResp').html(data.result);
+            setHasUnsavedChanges(false);
+        } else {
+            log("ERROR: problem with ajax-result:");
+            log(data);
+        }
     }
     
-    $('#unsavedChanges').click(function() {
-        log('unsavedChanges clicked');
+    $('#saveUnsavedChanges').click(function() {
+        log('saveUnsavedChanges clicked');
         log("sending dirties:");
         log(dirties);
         execRemote('/index.php?r=upload/ajaxReportDataUpdate', handleReportDataUpdateResp, dirties);
@@ -224,6 +243,9 @@ $(document).ready( function () {
 <div id="unsavedChanges">
     <span id="saveUnsavedChanges">
         Save Unsaved Changes
+    </span><br/>
+    <span id="saveChangesResp">
+        
     </span>
 </div>
 

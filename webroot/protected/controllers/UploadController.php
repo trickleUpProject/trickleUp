@@ -77,8 +77,10 @@ class UploadController extends Controller
 	        } else {
 	            Yii::log("couldn't find LivestockingTracking model-instance with business_number: " . $id, 'error', "");
 	        }
-	        
 	    }
+	    
+	    header('Content-type: application/json');
+	    echo '{"result": "Changes Saved"}';
 	}
 
 	/**
@@ -97,7 +99,7 @@ class UploadController extends Controller
 	        
 	        $docRoot = getenv("DOCUMENT_ROOT");
 	        
-	        $model->attributes=$_POST['UploadForm'];
+	        $model->attributes = $_POST['UploadForm'];
 	        $model->file = CUploadedFile::getInstance($model, 'file');
 	        
 	        Yii::log('fileName: ' . $model->file->name, 'info', "");
@@ -134,10 +136,12 @@ class UploadController extends Controller
 	        } catch(Exception $e) {
 	            Yii::log("couldn't read Excel-doc: [fileName]: " . $e->getMessage() . ":" . $e->getTraceAsString(), 'error', "");
 	        }
+	        
+	        $this->render('uploadExcel',array('model' => $model));
 	    } 
 	    else 
 	    {
-	        $this->render('uploadExcel',array('model'=>$model));
+	        $this->render('uploadExcel',array('model' => $model));
 	    }
 
 	}
