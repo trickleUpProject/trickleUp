@@ -128,7 +128,14 @@ class UploadController extends Controller
 	            Yii::log("formId: " . $formId->getValue(), 'info', "");
 	             
 	            if($this->startsWith($formId->getValue(), self::FORMAT_3A_2, true)) {
-	                $this->excelFormatHandlers[self::FORMAT_3A_2]->import($objPHPExcel);
+	                
+	                $result = &$this->excelFormatHandlers[self::FORMAT_3A_2]->import($objPHPExcel);
+	                
+	                if($result) {
+	                    Yii::log("got badRows as result: " . print_r($result, true), 'error', "");
+	                    $model->badRows = $result;
+	                }
+	                
 	            } else {
 	                Yii::log("no ExcelFormatHandler found for [fileName]!", 'error', "");
 	            }

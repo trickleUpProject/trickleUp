@@ -8,6 +8,7 @@
 class UploadForm extends CFormModel
 {
 	public $file;
+	public $badRows;
 
 	/**
 	 * Declares the validation rules.

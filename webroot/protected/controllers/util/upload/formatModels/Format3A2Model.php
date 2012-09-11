@@ -43,11 +43,11 @@ class Format3A2Model {
             "r7" => array("name" => "deworming_done", "type" => "varchar"),
             "r8" => array("name" => "problem_conceiving", "type" => "varchar"),
             "r9" => array("name" => "concentrate_during_pregnancy", "type" => "varchar"),
-            "r10" => array("name" => 'compound', 'methodName' => 'compound_handleMiscarriageAndReason'),
+            "r10" => array("name" => 'compound', 'methodName' => 'compound_handle_MiscarriageAndReason'),
             "r11" => array("name" => "delivery_date", "type" => "date"),
-            "r12" => array("name" => 'compound', 'methodName' => 'compound_handleNumKidsBornMF'),
-            "r13" => array("name" => 'compound', 'methodName' => 'compound_handleDeathAndReason'),
-            "r14" => array("name" => 'compound', 'methodName' => 'compound_handleSoldSalePrice')
+            "r12" => array("name" => 'compound', 'methodName' => 'compound_handle_NumKidsBornMF'),
+            "r13" => array("name" => 'compound', 'methodName' => 'compound_handle_DeathAndReason'),
+            "r14" => array("name" => 'compound', 'methodName' => 'compound_handle_SoldSalePrice')
         );
     }
     
@@ -68,11 +68,11 @@ class Format3A2Model {
     // special methods called typically only via reflection,
     //  when there's no one-to-one relationship btw fieldName and modelField
     
-    public function compound_handleMiscarriageAndReason($inst, $fieldVal) {
+    public function compound_handle_MiscarriageAndReason($inst, $fieldVal) {
         $parts = explode("&", $fieldVal);
         if(count($parts) < 2) {
-            Yii::log("Cell Format-Error: couldn't parse miscarriageAndReason: " . $fieldVal, 'error', "");
-            return;
+            Yii::log("Cell Format-Error: couldn't parse MiscarriageAndReason: " . $fieldVal, 'error', "");
+            return array('msg' => "Format-Error: couldn't parse MiscarriageAndReason");
         }
         $miscarriage = $parts[0];
         $reason = $parts[1];
@@ -84,9 +84,11 @@ class Format3A2Model {
         }
         $inst->miscarriage = $miscarriage;
         $inst->miscarriage_reason = $reason;
+        
+        return null;
     }
     
-    public function compound_handleNumKidsBornMF($inst, $fieldVal) {
+    public function compound_handle_NumKidsBornMF($inst, $fieldVal) {
         $parts = explode("|", $fieldVal);
         if(count($parts) < 2) {
             Yii::log("Cell Format-Error: couldn't parse numKidsBornMF: " . $fieldVal, 'error', "");
@@ -97,9 +99,11 @@ class Format3A2Model {
         
         $inst->num_kids_m = intval($numKidsM);
         $inst->num_kids_f = intval($numKidsF);
+        
+        return null;
     }
     
-    public function compound_handleDeathAndReason($inst, $fieldVal) {
+    public function compound_handle_DeathAndReason($inst, $fieldVal) {
         $parts = explode("&", $fieldVal);
         if(count($parts) < 2) {
             Yii::log("Cell Format-Error: couldn't parse deathAndReason: " . $fieldVal, 'error', "");
@@ -116,9 +120,11 @@ class Format3A2Model {
         }
         $inst->death = $death;
         $inst->reason_for_death = $reason;
+        
+        return null;
     }
     
-    public function compound_handleSoldSalePrice($inst, $fieldVal) {
+    public function compound_handle_SoldSalePrice($inst, $fieldVal) {
         $parts = explode("&", $fieldVal);
         if(count($parts) < 2) {
             Yii::log("Cell Format-Error: couldn't parse soldSalePrice: " . $fieldVal, 'error', "");
@@ -140,6 +146,8 @@ class Format3A2Model {
         NUMERIC types [...] are used to store values for which it is important
         to preserve exact precision, for example with monetary data."
         */
+        
+        return null;
     }
     
     // END: special compound methods
