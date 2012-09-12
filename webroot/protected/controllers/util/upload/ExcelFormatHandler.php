@@ -5,5 +5,5 @@ abstract class ExcelFormatHandler {
         
     }
     
-    abstract function import($objPHPExcel);
+    abstract function import($objPHPExcel, $importConfig);
 }

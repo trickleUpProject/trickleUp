@@ -9,14 +9,19 @@ class Format3A2Model {
     public function __construct() {
         
         $this->cellMap = array(
-          "business_number" => array(array(), array()),
-          "participant_name" => array(array(), array()),
-          "staff" => array(array(), array()),
-          "month" => array(array(), array()),
-          "year" => array(array(), array()),
-          "quarter" => array(array(), array()),
-          "livestock_number" => array(array(1,13), array(4)), // TODO: colSpecs should be strictly numeric?
-          "livestock_type" => array(array(), array()),
+          /////  global values ////
+          "business_number" => 'F2',
+          "participant_name" => 'B2',
+          //"livestock_type" => array(array(), array()), // parse out of sheet-title
+          "shed_condition" => 'E15', // requires parsing the cell-value! "Shed condition: ______ / 5"
+          "maintenance_cleanliness" => 'I15', // // requires parsing the cell-value! "Maintenance & Cleanliness (Y/N):"
+          "KMnO4_application" => 'A16', // requires parsing the cell-value! "KMnO4 appication before and after delivery (Y/N):"
+          ///////////////////////////////
+          "staff" => 'I2',
+          "year" => 'L2',   // i.e., infer from L2, namely 'Period'
+          "month" => 'L2',  // i.e., infer from L2, namely 'Period'
+          "quarter" => 'L2',// i.e., infer from L2, namely 'Period'
+          "livestock_number" => array(array(1,13), array(4)),
           "age_in_months" => array(array(), array()),
           "weight_kg" => array(array(), array()),
           "deworming_done" => array(array(), array()),
@@ -31,10 +36,7 @@ class Format3A2Model {
           "death" => array(array(), array()),
           "reason_for_death" => array(array(), array()),
           "sold" => array(array(), array()),
-          "sale_price" => array(array(), array()),
-          "shed_condition" => array(array(), array()),
-          "maintenance_cleanliness" => array(array(), array()),
-          "KMnO4_application" => array(array(), array())
+          "sale_price" => array(array(), array())
         );
 
         $this->dbFieldsForRowNums = array(
