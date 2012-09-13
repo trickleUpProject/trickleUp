@@ -4,6 +4,7 @@
  * This is the model class for table "bad_row".
  *
  * The followings are the available columns in table 'bad_row':
+ * @property integer $id
  * @property integer $import_time
  * @property string $import_file
  * @property string $import_format
@@ -43,7 +44,7 @@ class BadRow extends CActiveRecord
 			array('import_format', 'length', 'max'=>127),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('import_time, import_file, import_format, data', 'safe', 'on'=>'search'),
+			array('id, import_time, import_file, import_format, data', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -64,6 +65,7 @@ class BadRow extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
+			'id' => 'ID',
 			'import_time' => 'Import Time',
 			'import_file' => 'Import File',
 			'import_format' => 'Import Format',
@@ -82,6 +84,7 @@ class BadRow extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
+		$criteria->compare('id',$this->id);
 		$criteria->compare('import_time',$this->import_time);
 		$criteria->compare('import_file',$this->import_file,true);
 		$criteria->compare('import_format',$this->import_format,true);

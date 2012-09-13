@@ -58,63 +58,52 @@ $(document).ready( function () {
         }
     }
 
-    //TODO: need to set all cells "read-only" that are part of a key in the DB,
-    //  because you're not allowed to change them (in the DB)
+    badRowData = [];
+
+    //TODO: dynamically generate this array
+    formatCols = []; //['bad_row_id', 'livestock_number', 'MiscarriageAndReason'];
     
-    var formatCols = [
-         'participant_name',
-         'livestock_type',
-         'age_in_months',
-         'weight_kg',
-         'miscarriage'
-    ];
+    <?php 
+    $badRows = $model->badRows;
+    //print_r($badRows);
     
-    function addTableRow(obj) {
-        $("#example").find('tbody')
-        .append($('<tr>')          // TODO: reference formatCols here instead of literally
-            .attr('id', obj['livestock_number'])
-            .attr('class', 'odd_gradeX')
-            .append($('<td>')
-                .text(obj['participant_name'])
-            )
-            .append($('<td>')
-                .text(obj['livestock_type'])
-            )
-            .append($('<td>')
-                .text(obj['age_in_months'])
-            )
-            .append($('<td>')
-                .text(obj['weight_kg'])
-            )
-            .append($('<td>')
-                .text(obj['miscarriage'] ? obj['miscarriage'] : "null") // real nulls screw up the table-layout!
-            )
-        );
+    if($badRows !== null) {
+       
+       echo "obj = null;\n";
+       
+       $rowCount = 0;
+       
+       foreach($badRows as $badRow) {
+           
+           //echo "formatCols.push('" . $badRow['name'] . "');\n";
+           
+           echo "obj = {};\n";
+           
+           foreach($badRow as $col) {
+               //if($col['name'] == 'bad_row_id') continue;
+               $val = is_numeric($col['value']) ? $col['value'] : ("'" . $col['value'] . "'");
+               echo "obj['" . $col['name'] . "'] = " . $val . ";\n";
+               
+               if($rowCount == 0 && $col['name'] != "bad_row_id") {
+                   echo "formatCols.push('" . $col['name'] . "');\n";
+               }
+           }
+           
+           echo "badRowData.push(obj);\n";
+           $rowCount++;
+       }
+       echo "badRows = true;\n";
+       echo "rowKey = 'bad_row_id';\n";
+       
+    } else {
+       echo "badRows = false;\n";
+       echo "rowKey = 'id';\n";
     }
+   ?>
 
-
-    var ary = [
-        {
-        "id": "1",
-        "livestock_number": "foo",
-        "participant_name": "bar",
-        "livestock_type": "baz",
-        "age_in_months": "fubar",
-        "weight_kg": "fubaz",
-        "miscarriage": "fubaz1"
-        },
-        {
-        "id": "2",
-        "livestock_number": "foo2",
-        "participant_name": "bar2",
-        "livestock_type": "baz2",
-        "age_in_months": "fubar2",
-        "weight_kg": "fubaz2",
-        "miscarriage": "fubaz2"
-        }
-    ];
-
-
+   //TODO: need to set all cells "read-only" that are part of a key in the DB,
+   //  because you're not allowed to change them (in the DB)
+    
     function execRemote(url, callback, dataToPOST) {
         var dataStr = dataToPOST != null ? ("data=" + JSON.stringify(dataToPOST)) : dataToPOST;
         var httpMethod = dataToPOST != null ? "POST" : "GET";
@@ -143,17 +132,8 @@ $(document).ready( function () {
     var dataById = {};
     var dirties = {}; // to avoid sending entire client-side copy to server for updating
     
-    function loadTable(data) {
+    function initDataTable() {
         
-        log(data);
-
-        for(var i = 0; i < data.length; i++) {
-            var item = data[i];
-            addTableRow(item);
-            // TODO: generalize this: use appropriate key for current format
-            dataById[item['livestock_number']] = item;
-        }
-
         $('#example').dataTable().makeEditable({
             
             //sUpdateURL: "UpdateData.php", //On the code.google.com POST request is not supported so this line is commented out
@@ -165,6 +145,7 @@ $(document).ready( function () {
                 log(arguments);
                 
                 var rowData = dataById[iRowIndex];
+                //TODO: fix handling here, which involves colFormat array, above
                 var colName = formatCols[iColumnIndex];
                 rowData[colName] = sNewValue;
                 
@@ -186,20 +167,35 @@ $(document).ready( function () {
         });
     }
 
-    //loadTable(ary);
-    
-    <?php 
-        if($model->badRows) {
-            echo "var badRows = true";
-        } else {
-            echo "var badRows = false";
+    function addTableRow(obj) {
+        var newTr = $('<tr>');
+        newTr.attr('id', obj[rowKey]);
+        newTr.attr('class', 'odd_gradeX');
+        
+        for(var key in obj) {
+            if(key == rowKey) continue;
+            newTr.append($('<td>').text(obj[key]));
         }
-    ?>
 
+        $("#example").find('tbody').append(newTr);
+    }
+    
+    function loadTable(data) {
+        log(data);
+        for(var i = 0; i < data.length; i++) {
+            var item = data[i];
+            addTableRow(item);
+            //dataById[item[rowKey]] = item;
+            dataById[i] = item;
+        }
+        initDataTable();
+    }
+    
     if(!badRows) {
         execRemote('/index.php?r=upload/ajaxReportData', loadTable);
     } else {
         log("handling badRows");
+        loadTable(badRowData);
     }
 
     function handleReportDataUpdateResp(data) {
@@ -254,7 +250,7 @@ $(document).ready( function () {
 	</div>
 
 <?php $this->endWidget(); ?>
-</div><!-- form -->
+</div>
 
 
 <div id="unsavedChanges">
@@ -273,27 +269,42 @@ $(document).ready( function () {
         <table cellpadding="0" cellspacing="0" border="0" class="display" style="width: 800px" id="example">
         	<thead>
         		<tr>
-        			<th>Participant Name</th>
-        			<th>Livestock Type</th>
-        			<th>Age in Months</th>
-        			<th>Weight (kg)</th>
-        			<th>Miscarriage</th>
+        			 
+        		<?php 
+        		     $badRows = $model->badRows;
+        		     //print_r($badRows);
+        		     
+        		     if($badRows !== null) {
+                        $aRowCols = $badRows[0];
+                        foreach($aRowCols as $col) {
+                            if($col['name'] == 'bad_row_id') continue;
+                            echo "<th>" . $col['name'] . "</th>\n";
+                        }
+                     }
+        		 ?>
+        			 
         		</tr>
         	</thead>
         	<tfoot>
         		<tr>
-        			<th>Participant Name</th>
-        			<th>Livestock Type</th>
-        			<th>Age in Months</th>
-        			<th>Weight (kg)</th>
-        			<th>Miscarriage</th>
+        			 
+        		<?php 
+        		     $badRows = $model->badRows;
+        		     //print_r($badRows);
+        		     
+        		     if($badRows !== null) {
+                        $aRowCols = $badRows[0];
+                        foreach($aRowCols as $col) {
+                            if($col['name'] == 'bad_row_id') continue;
+                            echo "<th>" . $col['name'] . "</th>\n";
+                        }
+                     }
+        		 ?>
+        			 
         		</tr>
         	</tfoot>
         	<tbody>
-        		 <?php 
-        		     $badRows = $model->badRows;
-        		     print_r($badRows);
-        		 ?>
+
         	</tbody>
         </table>
 

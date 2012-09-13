@@ -212,14 +212,6 @@ class Format3A2Handler2 extends ExcelFormatHandler {
                 break;
             }
             
-            //TODO: you either have to store all the fields you can, first time in, in the $inst
-            //  and then, second time in (while 'fixing'), just update or set the fields you couldn't
-            //  at first set; or don't store any fields in the $inst, and carry all those fields
-            //  back and forth during the 'fixing' process, and then store them all at once in the
-            //  second ('fixing') step; best to store what you can in the $inst, and pass back and forth
-            //  only the values required for fixing; then, in second ('fixing') step, lookup ('find()')
-            //  each $inst to be fixed and update it
-            
             if($badRow !== null) {
                 
                 $this->setGlobalValues($globalValues, $badRows, null); // need to pass $badRows by reference?
@@ -249,8 +241,11 @@ class Format3A2Handler2 extends ExcelFormatHandler {
                     Yii::log(print_r($badRowModel->getErrors(), true), 'error', "");
                 }
                 
-                //TODO: fetch last_insert_id in bad_row and add it to latest badRow in badRows,
+                // fetch last_insert_id (PK) in bad_row and add it to latest badRow in badRows,
                 //  so you can find it later, when the 'fix' comes back (via AJAX from DataTable)
+                
+                $fieldDesc = array('name' => 'bad_row_id', 'value' => $badRowModel->getPrimaryKey());
+                $badRows[count($badRows)-1][] = $fieldDesc;
                 
                 $badRow = null; // clear for next iteration
                 
