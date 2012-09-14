@@ -59,9 +59,7 @@ $(document).ready( function () {
     }
 
     badRowData = [];
-
-    //TODO: dynamically generate this array
-    formatCols = []; //['bad_row_id', 'livestock_number', 'MiscarriageAndReason'];
+    formatCols = [];
     
     <?php 
     $badRows = $model->badRows;
@@ -75,12 +73,9 @@ $(document).ready( function () {
        
        foreach($badRows as $badRow) {
            
-           //echo "formatCols.push('" . $badRow['name'] . "');\n";
-           
            echo "obj = {};\n";
            
            foreach($badRow as $col) {
-               //if($col['name'] == 'bad_row_id') continue;
                $val = is_numeric($col['value']) ? $col['value'] : ("'" . $col['value'] . "'");
                echo "obj['" . $col['name'] . "'] = " . $val . ";\n";
                
@@ -143,19 +138,21 @@ $(document).ready( function () {
             fnOnEdited: function(result, sOldValue, sNewValue, iRowIndex, iColumnIndex, iRealColumnIndex) {
 
                 log(arguments);
-                
-                var rowData = dataById[iRowIndex];
-                //TODO: fix handling here, which involves colFormat array, above
+
+                // for bad_rows, rowId is id in bad_rows table; server-side, need to infer original table
+                //  from import_format column therein, with mapping from import_formats to db-tables
+                var rowId = $("#example tbody:nth-child(" + iRowIndex + ")").attr('id');
+                var rowData = dataById[rowId];
                 var colName = formatCols[iColumnIndex];
                 rowData[colName] = sNewValue;
                 
-                var key = iRowIndex + "-" + colName;
+                var key = rowId + "-" + colName;
                 
                 if(dirties[key]) {
                     dirties[key].value = sNewValue;
                 } else {
                     dirties[key] = {
-                        "id": iRowIndex,
+                        "id": rowId,
                         "colName": colName,
                         "value": sNewValue
                     };
@@ -192,7 +189,7 @@ $(document).ready( function () {
     }
     
     if(!badRows) {
-        execRemote('/index.php?r=upload/ajaxReportData', loadTable);
+        //execRemote('/index.php?r=upload/ajaxReportData', loadTable);
     } else {
         log("handling badRows");
         loadTable(badRowData);
@@ -215,7 +212,11 @@ $(document).ready( function () {
         log('saveUnsavedChanges clicked');
         log("sending dirties:");
         log(dirties);
-        execRemote('/index.php?r=upload/ajaxReportDataUpdate', handleReportDataUpdateResp, dirties);
+        var data = {
+            op: "FORMAT_FIX",
+            dirties: dirties
+        };
+        execRemote('/index.php?r=upload/ajaxReportDataUpdate', handleReportDataUpdateResp, data);
     });
 
 } );

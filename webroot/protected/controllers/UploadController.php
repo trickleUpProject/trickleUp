@@ -4,8 +4,13 @@ class UploadController extends Controller
 {
     const FORMAT_3A_2 = 'Format 3A-2';
     
+    const AJAX_OP_FORMAT_FIX = 'FORMAT_FIX';
+    
+    const ERROR_TYPE_MULTI_VAL = 'multiVal';
     
     private $excelFormatHandlers;
+    
+    private $dbModelNameForFormat;
     
     
     public function init()
@@ -14,6 +19,10 @@ class UploadController extends Controller
         
         //$this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler();
         $this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler2();
+        
+        $this->dbModelNameForFormat = array(
+            self::FORMAT_3A_2 => "LivestockTracking"
+        );
     }
     
 	/**
@@ -41,6 +50,157 @@ class UploadController extends Controller
 	    Yii::app()->end();
 	}
 	
+	
+	
+	protected function doMultiValFix($fixFailures, $dirty, $badRow) {
+	    
+	    $importFormat = $badRow->import_format;
+        $methodName = "compound_handle_" . $dirty['name'];
+        
+        // 'null' here is original-table model's instance
+        // TODO: have this type of method, in these cases (i.e., without $inst), return array of assoc arrays
+        //  with keys: fieldName, value
+        $parseResult = $this->excelFormatHandlers[$importFormat]->$methodName(null, $val);
+        
+        if($parseResult !== null) {
+            if($parseResult['error']) {
+                $fixFailures[] = $parseResult;
+            } else {
+                $dirty['parseResult'] = $parseResult;
+            }
+        }
+	}
+	
+	protected function getDirtiesById($dirties) {
+	    
+	    $dirtiesById = array();
+	    
+	    foreach($dirties as $key => $val) {
+	         
+	        $keyParts = explode("-", $key);
+	        $id = $keyParts[0];
+	        $id = "id_" . $id; // because simple numeric key wouldn't behave as desired
+	        $colName = $keyParts[1];
+	        Yii::log("id=" . $id . "; colName=" . $colName, 'info', "");
+	         
+	        $dirty = $dirties[$key];
+	        
+	        if(array_key_exists($id, $dirtiesById)) {
+	            $dirtiesById[$id][] = $dirty;
+	        } else {
+	            $dirtiesById[$id] = array();
+	            $dirtiesById[$id][] = $dirty;
+	        }
+	    }
+	    
+	    return $dirtiesById;
+	}
+	
+	protected function doFormatFixesForRow($id, $dirtiesForRow) {
+	    
+	    $fixFailures = array();
+	    
+	    $badRow = BadRow::model()->find(
+	                    'id=:id',
+	                    array(':id' => $id)
+	    );
+	    
+	    $importFormat = $badRow->import_format;
+	    $rowData = $badRow->data;
+	    $rowData = CJSON::decode($rowData); // need to pass 'true' for assoc arrays?
+	    
+	    foreach($dirtiesForRow as $key => $val) {
+	         
+	        $keyParts = explode("-", $key);
+	        $id = $keyParts[0];
+	        $colName = $keyParts[1];
+	        Yii::log("id=" . $id . "; colName=" . $colName, 'info', "");
+	         
+	        $dirty = $dirties[$key];
+	         
+	        // TODO: maybe, on client-side, arrange to store as special attr on td key for format-error-type,
+	        //  e.g., multiVal; then, send that into here in the $dirty
+	         
+	        $errorType = $dirty['format-error-type'];
+	        $errorType = ERROR_TYPE_MULTI_VAL; // TEMPORARY for testing
+	         
+	        switch($errorType) {
+	            case ERROR_TYPE_MULTI_VAL: {
+	                $this->doMultiValFix($fixFailures, $dirty, $badRow);
+	                break;
+	            }
+	            default: {
+	                Yii::log("unrecognized ERROR_TYPE: " . $errorType, 'error', "");
+	            }
+	        }
+	    }
+	    
+	    if(count($fixFailures) == 0) {
+	        
+	        $dbModelName = $this->dbModelNameForFormat($importFormat);
+	        $dbModel = new $dbModelName();
+	        
+	        foreach($rowData as $field) {
+	            // need to sort of "merge" already-ok-fields with fixed fields
+	            
+	            // $dbModel->setAttribute($fieldName, $fieldValue);
+	        }
+	        
+	        if(!$dbModel->save()) {
+	            Yii::log($dbModel->getErrors(), 'error', "");
+	            // TODO: tell user that update for this row failed (NOT NULL col-value not provided, etc.)
+	        }
+	    } else {
+	        // TODO: tell user about failed fixes
+	    }
+	}
+	
+	protected function doFormatFixUpdate($data) {
+	    
+	    $dirties = $data['dirties'];
+	    
+	    // gather dirties by row (to later attempt to store whole row at once);
+	    //  won't get that far if any of the fixes fails; or if, even with all fixes succeeding,
+	    //  not all required fixes have been provided (by the user)
+	    $dirtiesById = $this->getDirtiesById($dirties);
+	    
+	    foreach($dirtiesById as $key => $val) {
+	        $dirtiesForId = $dirtiesById[$key];
+	        $idParts = explode("_", $key);
+	        $id = $idParts[1];
+	        $this->doFormatFixesForRow($id, $dirtiesForId);
+	    }
+	    
+	    // TODO: check for continuing format-errors (or other errors);
+	    //   if any, then inform user: above, accumulate still-bad rows
+	    //   and return them as when first attempting to parse excel-doc upload
+	    
+	    header('Content-type: application/json');
+	    echo '{"result": "Changes Saved"}';
+	}
+	
+	public function actionAjaxReportDataUpdate() {
+	     
+	    Yii::log("handling AjaxReportDataUpdate", 'info', "");
+	    Yii::log(print_r($_POST['data'], true), 'info', "");
+	     
+	    $data = CJSON::decode($_POST['data'], true);
+	    Yii::log(print_r($data, true), 'info', "");
+
+	    //TODO: maybe set up an ajaxMethodsMap and invoke reflectively	    
+	    switch($data['op']) {
+	        case self::AJAX_OP_FORMAT_FIX: {
+	            $this->doFormatFixUpdate($data);
+	            break;
+	        }
+	        default: {
+	            Yii::log("unrecognized ajax-op: " . $op, 'error', "");
+	            //TODO: return error-message
+	        }
+	    }
+	}
+	
+	/*
 	public function actionAjaxReportDataUpdate() {
 	    
 	    //TODO: generalize for all relevant formats (Excel-docs/sheets)
@@ -82,6 +242,7 @@ class UploadController extends Controller
 	    header('Content-type: application/json');
 	    echo '{"result": "Changes Saved"}';
 	}
+	*/
 
 	/**
 	 * 
