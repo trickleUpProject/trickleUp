@@ -35,6 +35,8 @@ class UploadController extends Controller
 		);
 	}
 	
+	
+	// TODO: TEMPORARY IMPLEMENTATION: specific to LivestockTracking; needs to be generalized
 	public function actionAjaxReportData() {
 	    
 	    $lsTrackings = LivestockTracking::model()->findAll();
@@ -55,12 +57,13 @@ class UploadController extends Controller
 	protected function doMultiValFix($fixFailures, $dirty, $badRow) {
 	    
 	    $importFormat = $badRow->import_format;
+        $formatHdlr = $this->excelFormatHandlers[$importFormat];
+        $formatModel = $formatHdlr->getModel();
         $methodName = "compound_handle_" . $dirty['name'];
         
+        Yii::log("doMultiValFix: calling formatModel-method: " . $methodName, 'info', "");
         // 'null' here is original-table model's instance
-        // TODO: have this type of method, in these cases (i.e., without $inst), return array of assoc arrays
-        //  with keys: fieldName, value
-        $parseResult = $this->excelFormatHandlers[$importFormat]->$methodName(null, $val);
+        $parseResult = $formatModel->$methodName(null, $val);
         
         if($parseResult !== null) {
             if($parseResult['error']) {
@@ -79,18 +82,16 @@ class UploadController extends Controller
 	         
 	        $keyParts = explode("-", $key);
 	        $id = $keyParts[0];
-	        $id = "id_" . $id; // because simple numeric key wouldn't behave as desired
+	        $id = "id_" . $id; // because simple numeric key wouldn't behave as desired (hash-wise)
 	        $colName = $keyParts[1];
 	        Yii::log("id=" . $id . "; colName=" . $colName, 'info', "");
 	         
 	        $dirty = $dirties[$key];
 	        
-	        if(array_key_exists($id, $dirtiesById)) {
-	            $dirtiesById[$id][] = $dirty;
-	        } else {
+	        if(!array_key_exists($id, $dirtiesById)) {
 	            $dirtiesById[$id] = array();
-	            $dirtiesById[$id][] = $dirty;
 	        }
+	        $dirtiesById[$id][] = $dirty;
 	    }
 	    
 	    return $dirtiesById;
@@ -98,16 +99,22 @@ class UploadController extends Controller
 	
 	protected function doFormatFixesForRow($id, $dirtiesForRow) {
 	    
+	    $result = array();
 	    $fixFailures = array();
+	    $result['fixFailures'] = $fixFailures;
 	    
 	    $badRow = BadRow::model()->find(
 	                    'id=:id',
 	                    array(':id' => $id)
 	    );
 	    
+	    $result['badRowModel'] = $badRow;
 	    $importFormat = $badRow->import_format;
+	    
 	    $rowData = $badRow->data;
-	    $rowData = CJSON::decode($rowData); // need to pass 'true' for assoc arrays?
+	    $rowData = CJSON::decode($rowData, true);
+	    
+	    $fixedDirtiesByFieldName = array();
 	    
 	    foreach($dirtiesForRow as $key => $val) {
 	         
@@ -118,7 +125,7 @@ class UploadController extends Controller
 	         
 	        $dirty = $dirties[$key];
 	         
-	        // TODO: maybe, on client-side, arrange to store as special attr on td key for format-error-type,
+	        // TODO: on client-side, arrange to store as special attr on td a key for format-error-type,
 	        //  e.g., multiVal; then, send that into here in the $dirty
 	         
 	        $errorType = $dirty['format-error-type'];
@@ -127,6 +134,9 @@ class UploadController extends Controller
 	        switch($errorType) {
 	            case ERROR_TYPE_MULTI_VAL: {
 	                $this->doMultiValFix($fixFailures, $dirty, $badRow);
+	                if(array_key_exists('parseResult', $dirty)) {
+	                    $fixedDirtiesByFieldName[$dirty['name']] = $dirty;
+	                }
 	                break;
 	            }
 	            default: {
@@ -141,18 +151,48 @@ class UploadController extends Controller
 	        $dbModel = new $dbModelName();
 	        
 	        foreach($rowData as $field) {
-	            // need to sort of "merge" already-ok-fields with fixed fields
 	            
-	            // $dbModel->setAttribute($fieldName, $fieldValue);
+	            $parseResult = null;
+	            if(array_key_exists($field['name'], $fixedDirtiesByFieldName)) {
+	                $parseResult = $fixedDirtiesByFieldName[$field['name']];
+	            }
+	            
+	            if($parseResult !== null) {
+	                foreach($parseResult as $field) {
+	                    $dbModel->setAttribute($field['name'], $field['value']);
+	                }
+	            } else {
+	                $dbModel->setAttribute($field['name'], $field['value']);
+	            }
 	        }
 	        
+	        Yii::log("saving dbModel: " . $dbModelName, 'info', "");
 	        if(!$dbModel->save()) {
 	            Yii::log($dbModel->getErrors(), 'error', "");
 	            // TODO: tell user that update for this row failed (NOT NULL col-value not provided, etc.)
 	        }
+	        
+	        return null;
+	        
 	    } else {
-	        // TODO: tell user about failed fixes
+	        Yii::log("fixFailures : " . count($fixFailures), 'error', "");
+	        return $fixFailures;
 	    }
+	}
+	
+	protected function updateBadRowDataWithFixFailures($fixFailureResult) {
+	    
+	    $fixFailures = $fixFailureResult['fixFailures'];
+	    $badRow = $fixFailureResult['badRowModel'];
+	    $badRowData = $badRow->data; // use explicit pass-by-reference? (assign-by-reference)
+	    
+	    foreach($badRowData as $fieldDescr) {
+	        if(array_key_exists($fieldDescr['name'], $fixFailures)) {
+	            $fieldDescr['value'] = $fixFailures[$fieldDescr['name']];
+	        }
+	    }
+	    
+	    return $badRowData; // maybe instead access (at call-site) within $fixFailureResult?
 	}
 	
 	protected function doFormatFixUpdate($data) {
@@ -160,23 +200,33 @@ class UploadController extends Controller
 	    $dirties = $data['dirties'];
 	    
 	    // gather dirties by row (to later attempt to store whole row at once);
-	    //  won't get that far if any of the fixes fails; or if, even with all fixes succeeding,
-	    //  not all required fixes have been provided (by the user)
+	    //  won't get that far if any of the fixes fails; or if, even with all 
+	    //  fixes succeeding, not all required fixes have been provided (by the user)
 	    $dirtiesById = $this->getDirtiesById($dirties);
+	    
+	    // NOTE: 'id', here, is bad_row id
+	    
+	    $badRowDatas = array();
 	    
 	    foreach($dirtiesById as $key => $val) {
 	        $dirtiesForId = $dirtiesById[$key];
 	        $idParts = explode("_", $key);
 	        $id = $idParts[1];
-	        $this->doFormatFixesForRow($id, $dirtiesForId);
+	        $result = $this->doFormatFixesForRow($id, $dirtiesForId);
+	        if($result !== null) {
+	            $badRowDatas[] = $this->updateBadRowDataWithFixFailures($result);
+	        }
 	    }
 	    
-	    // TODO: check for continuing format-errors (or other errors);
-	    //   if any, then inform user: above, accumulate still-bad rows
-	    //   and return them as when first attempting to parse excel-doc upload
-	    
 	    header('Content-type: application/json');
-	    echo '{"result": "Changes Saved"}';
+	    
+	    if(count($badRowDatas) > 0) {
+	        $badRowsJSON = CJSON::encode($badRowDatas);
+	        echo '{"result": ' . $badRowsJSON . '}';
+	    } else {
+	        echo '{"result": "All format-fixes successful.  Excel-doc imported successfully."}';
+	    }
+	    
 	}
 	
 	public function actionAjaxReportDataUpdate() {

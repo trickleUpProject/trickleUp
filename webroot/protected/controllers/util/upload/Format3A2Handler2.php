@@ -21,6 +21,11 @@ class Format3A2Handler2 extends ExcelFormatHandler {
         $this->refFormatModel = new ReflectionClass('Format3A2Model');
     }
     
+    public function getFormatModel() {
+        return $this->formatModel;
+    }
+    
+    //TODO: implement parse-failure/fix-failure for these (global) values
     
     protected function extractShedCondition($str) {
          // "Shed condition: ______ / 5"  // do I seriously have to translate a count of underscores into a number?
@@ -84,14 +89,31 @@ class Format3A2Handler2 extends ExcelFormatHandler {
         return $globalValues;
     }
     
+    protected function addFieldDescrToLatestBadRowData($badRows, $globalValues, $key) {
+        $fieldDesc = array('name' => $key, 'value' => $globalValues[$key]);
+        $badRows[count($badRows)-1][] = $fieldDesc;
+    }
+    
     protected function setGlobalValues($globalValues, $badRows, $inst) { // need to pass in obj-params by reference?
         
         if($badRows) {
-            // TODO: add a "fieldDescr" for each global value, 
-            //   but only those really needed for the user to be able to 'fix' bad-row values
-            //   (while viewing those values in the DataTable)
             
-            $fieldDesc = array('name' => 'participant_name', 'value' => $globalValues["participant_name"]);
+            addFieldDescrToLatestBadRowData($badRows, $globalValues, "business_number");
+            addFieldDescrToLatestBadRowData($badRows, $globalValues, "participant_name");
+            addFieldDescrToLatestBadRowData($badRows, $globalValues, "livestock_type");
+            addFieldDescrToLatestBadRowData($badRows, $globalValues, "shed_condition");
+            addFieldDescrToLatestBadRowData($badRows, $globalValues, "maintenance_cleanliness");
+            addFieldDescrToLatestBadRowData($badRows, $globalValues, "KMnO4_application");
+            
+            //TODO: infer these three from "Period:" ?
+            
+            $fieldDesc = array('name' => 'year', 'value' => 2012);
+            $badRows[count($badRows)-1][] = $fieldDesc;
+            
+            $fieldDesc = array('name' => 'quarter', 'value' => 1);
+            $badRows[count($badRows)-1][] = $fieldDesc;
+            
+            $fieldDesc = array('name' => 'month', 'value' => 1);
             $badRows[count($badRows)-1][] = $fieldDesc;
         } 
         else if($inst) {
@@ -105,6 +127,19 @@ class Format3A2Handler2 extends ExcelFormatHandler {
             $inst->month = 1;
             
             $inst->livestock_type = $globalValues["livestock_type"];
+            
+            $inst->shed_condition = $globalValues["shed_condition"];
+            $inst->maintenance_cleanliness = $globalValues["maintenance_cleanliness"];
+            $inst->KMnO4_application = $globalValues["KMnO4_application"];
+        }
+    }
+    
+    protected function copyInstanceValsToBadRow($inst, $badRows) {
+        $attrLabels = $inst->attributeLabels();
+        foreach($attrLabels as $fieldName => $label) {
+            $attrVal = $inst->getAttribute($fieldName);
+            $fieldDescr = array('name' => $fieldName, 'value' => $attrVal);
+            $badRows[count($badRows)-1][] = $fieldDescr;
         }
     }
     
@@ -127,6 +162,7 @@ class Format3A2Handler2 extends ExcelFormatHandler {
         
         $tmpLivestockNum = 0;
         
+        //TODO: handle parse-failures here (failures to parse any of the global values)
         $globalValues = $this->getGlobalValues($objWorksheet);
         
         $badRows = array();
@@ -184,7 +220,7 @@ class Format3A2Handler2 extends ExcelFormatHandler {
                     $refMethod = $this->refFormatModel->getMethod($methodName);
                     $result = $refMethod->invokeArgs($this->formatModel, array($inst, $cell->getValue()));
                     
-                    if($result !== null) {
+                    if($result !== null && array_key_exists('error', $result)) {
                         if($badRow == null) {
                             $badRows[] = array();
                             $badRow = array(); // having only a boolean effect now
@@ -193,16 +229,13 @@ class Format3A2Handler2 extends ExcelFormatHandler {
                         $fieldName = $methodNameParts[2]; // after "compound" and "handle"
                         $val = $cell->getValue();
                         
-                        $fieldDesc = array('name' => 'livestock_number', 'value' => $livestock_number);
-                        $badRows[count($badRows)-1][] = $fieldDesc;
-                        
-                        $fieldDesc = array('name' => $fieldName, 'value' => $val, 'msg' => $result['msg']);
+                        $fieldDesc = array('name' => $fieldName, 'value' => $val, 'msg' => $result['error']);
                         $badRows[count($badRows)-1][] = $fieldDesc;
                         
                         Yii::log("added fieldDesc to latest badRow: " . print_r($badRows[count($badRows)-1], true), 'info', "");
                         
                     } else {
-                        Yii::log("no result from compound method: " . $methodName, 'info', "");
+                        Yii::log("no result or no error-result from compound method: " . $methodName, 'info', "");
                     }
                 }
                 
@@ -214,16 +247,21 @@ class Format3A2Handler2 extends ExcelFormatHandler {
             
             if($badRow !== null) {
                 
-                $this->setGlobalValues($globalValues, $badRows, null); // need to pass $badRows by reference?
+                //TODO: need to handle globalValues separately: in UI, need to enable their
+                // display, editing, and fix-submission in separate form-fields; so, need to send
+                // them back and forth in separate nested array; then, in UI, check for them
+                // and dynamically create required form-fields for handling them, probably via
+                // JQuery clone() method, as in your Eleusis-project
                 
-                //TODO: need to store ALL cell-values of badRow in data (while iterating, above)
-                //  so have all those values second time in, after the 'fix'; when cannot split
-                //  a cell-value needing splitting, you store the non-split value, and otherwise
-                //  you store the values separted, ready for storage in relevant normal table;
-                //  when updating, you make use of the returning value derived from last_insert_id
-                //  in bad_row, to fetch any additional needed data; will need to then re-attempt the
-                //  splitting of relevant cells; ultimately, if 'fixes' worked, you have all values
-                //  required for storing a new $inst
+                // passing $badRows like this, because of weirdness otherwise with having the
+                //  values actually added to the relevant nested array; might be a mistake
+                //  involving need for explicit pass-by-reference
+                
+                //TODO: store globalValues (redundantly!) in each $badRow?
+                //  if necessary, along with any parse-failure-info for each of them ?
+                
+                $this->setGlobalValues($globalValues, $badRows, null);
+                $this->copyInstanceValsToBadRow($inst, $badRows);
                 
                 $data = CJSON::encode($badRows[count($badRows)-1]);
                 $importFile = $importConfig['import_file'];
@@ -241,9 +279,6 @@ class Format3A2Handler2 extends ExcelFormatHandler {
                     Yii::log(print_r($badRowModel->getErrors(), true), 'error', "");
                 }
                 
-                // fetch last_insert_id (PK) in bad_row and add it to latest badRow in badRows,
-                //  so you can find it later, when the 'fix' comes back (via AJAX from DataTable)
-                
                 $fieldDesc = array('name' => 'bad_row_id', 'value' => $badRowModel->getPrimaryKey());
                 $badRows[count($badRows)-1][] = $fieldDesc;
                 
@@ -253,24 +288,11 @@ class Format3A2Handler2 extends ExcelFormatHandler {
 
                 $this->setGlobalValues($globalValues, null, $inst); // need to pass $inst by reference?
                 
-                /*
-                //TODO: temporary: needed to satisfy all NOT NULLs and uniqueness constraints
-                $inst->business_number = $tmpLivestockNum;
-                $inst->participant_name = 'Some Participant Name - ' . $tmpLivestockNum;
-                $inst->year = 2012;
-                $inst->quarter = 1;
-                $inst->month = 1;
-                //$inst->livestock_number = $tmpLivestockNum++;
-                $inst->livestock_type = 'pig'; // relates to which sheet is current
-                */
-                
-                //TODO: if badRow (how to know it here though?), don't save;
+                //TODO:
                 // should have a field "import_validated", default value false;
-                // could use single timestamp for storing these rows; then can later
-                // set them to import_validated, once all badRows have been fixed; or
-                // don't bother with that and just store what you can when you can, and
-                // store the rest later, once their values have been fixed; then again,
-                // overall procedure could be interrupted (e.g., by end-user); then, could
+                // could use single timestamp for storing current set of rows; then can 
+                // later set them to import_validated, once all badRows have been fixed;
+                // but overall procedure could be interrupted (e.g., by end-user); then, could
                 // store in DB in table bad_rows (import_timestamp, data), with 'data' being
                 // JSON of badRow, so user could later get back to fixing those badRows; then,
                 // using that import_timestamp, you'd set import_validated on all the newly

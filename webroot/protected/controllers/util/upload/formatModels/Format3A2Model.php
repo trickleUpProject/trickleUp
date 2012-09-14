@@ -74,42 +74,63 @@ class Format3A2Model {
         $parts = explode("&", $fieldVal);
         if(count($parts) < 2) {
             Yii::log("Cell Format-Error: couldn't parse MiscarriageAndReason: " . $fieldVal, 'error', "");
-            return array('msg' => "Format-Error: couldn't parse MiscarriageAndReason");
+            return array('error' => "Format-Error: couldn't parse MiscarriageAndReason");
         }
         $miscarriage = $parts[0];
         $reason = $parts[1];
         Yii::log("miscarriage=". $miscarriage . "; reason=" . $reason, 'info', "");
+        
         $miscarriage = trim($miscarriage);
+        
         if($miscarriage != 'Y' && $miscarriage != 'N') {
             Yii::log("miscarriage value neither 'Y' nor 'N'", 'error', "");
-            return;
+            return array('error' => "Format-Error: miscarriage must be either 'Y' or 'N'");
         }
-        $inst->miscarriage = $miscarriage;
-        $inst->miscarriage_reason = $reason;
-        
-        return null;
+        if($inst !== null) {
+            $inst->miscarriage = $miscarriage;
+            $inst->miscarriage_reason = $reason;
+            return null;
+        } else {
+            $result = array();
+            $field = array('name' => 'miscarriage', 'value' => $miscarriage);
+            $result[] = $field;
+            $field = array('name' => 'miscarriage_reason', 'value' => $reason);
+            $result[] = $field;
+            return $result;
+        }
     }
     
     public function compound_handle_NumKidsBornMF($inst, $fieldVal) {
         $parts = explode("|", $fieldVal);
         if(count($parts) < 2) {
             Yii::log("Cell Format-Error: couldn't parse numKidsBornMF: " . $fieldVal, 'error', "");
-            return;
+            return array('error' => "Cell Format-Error: couldn't parse numKidsBornMF");
         }
         $numKidsM = $parts[0];
+        $numKidsM = intval($numKidsM);
+        
         $numKidsF = $parts[1];
+        $numKidsF = intval($numKidsF);
         
-        $inst->num_kids_m = intval($numKidsM);
-        $inst->num_kids_f = intval($numKidsF);
-        
-        return null;
+        if($inst !== null) {
+            $inst->num_kids_m = $numKidsM;
+            $inst->num_kids_f = $numKidsF;
+        } else {
+            $result = array();
+            $field = array('name' => 'num_kids_m', 'value' => $numKidsM);
+            $result[] = $field;
+            $field = array('name' => 'num_kids_f', 'value' => $numKidsM);
+            $result[] = $field;
+            return $result;
+        }
+
     }
     
     public function compound_handle_DeathAndReason($inst, $fieldVal) {
         $parts = explode("&", $fieldVal);
         if(count($parts) < 2) {
             Yii::log("Cell Format-Error: couldn't parse deathAndReason: " . $fieldVal, 'error', "");
-            return;
+            return array('error' => "Cell Format-Error: couldn't parse deathAndReason");
         }
         $death = $parts[0];
         $reason = $parts[1];
@@ -120,17 +141,26 @@ class Format3A2Model {
             Yii::log("bad date-format", 'error', "");
             return;
         }
-        $inst->death = $death;
-        $inst->reason_for_death = $reason;
         
-        return null;
+        if($inst !== null) {
+            $inst->death = $death;
+            $inst->reason_for_death = $reason;
+        } else {
+            $result = array();
+            $field = array('name' => 'death', 'value' => $death);
+            $result[] = $field;
+            $field = array('name' => 'reason_for_death', 'value' => $reason);
+            $result[] = $field;
+            return $result;
+        }
+
     }
     
     public function compound_handle_SoldSalePrice($inst, $fieldVal) {
         $parts = explode("&", $fieldVal);
         if(count($parts) < 2) {
             Yii::log("Cell Format-Error: couldn't parse soldSalePrice: " . $fieldVal, 'error', "");
-            return;
+            return array('error', "Cell Format-Error: couldn't parse soldSalePrice");
         }
         $sold = $parts[0];
         $salePrice = $parts[1];
@@ -141,15 +171,24 @@ class Format3A2Model {
             Yii::log("bad date-format", 'error', "");
             return;
         }
-        $inst->sold = $sold;
-        $inst->sale_price = $salePrice; // float type! should instead be, e.g., DECIMAL(8,2)
-        /*
-        DECIMAL would suit your needs better -- from [2]: "The DECIMAL and
-        NUMERIC types [...] are used to store values for which it is important
-        to preserve exact precision, for example with monetary data."
-        */
         
-        return null;
+        if($inst !== null) {
+            $inst->sold = $sold;
+            $inst->sale_price = $salePrice; // float type! should instead be, e.g., DECIMAL(8,2)
+            /*
+             DECIMAL would suit your needs better -- from [2]: "The DECIMAL and
+            NUMERIC types [...] are used to store values for which it is important
+            to preserve exact precision, for example with monetary data."
+            */
+        } else {
+            $result = array();
+            $field = array('name' => 'sole', 'value' => $sold);
+            $result[] = $field;
+            $field = array('name' => 'sale_price', 'value' => $salePrice);
+            $result[] = $field;
+            return $result;
+        }
+
     }
     
     // END: special compound methods
