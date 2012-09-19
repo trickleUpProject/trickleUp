@@ -91,7 +91,12 @@ class Format3A2Handler2 extends ExcelFormatHandler {
     
     protected function addFieldDescrToLatestBadRowData($badRows, $globalValues, $key) {
         $fieldDesc = array('name' => $key, 'value' => $globalValues[$key]);
-        $badRows[count($badRows)-1][] = $fieldDesc;
+        
+        if(!array_key_exists('globals', $badRows[count($badRows)-1])) {
+            $badRows[count($badRows)-1]['globals'] = array();
+        }
+        
+        $badRows[count($badRows)-1]['globals'][] = $fieldDesc;
     }
     
     protected function setGlobalValues($globalValues, $badRows, $inst) { // need to pass in obj-params by reference?

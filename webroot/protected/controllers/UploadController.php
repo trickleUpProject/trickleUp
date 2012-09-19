@@ -116,14 +116,8 @@ class UploadController extends Controller
 	    
 	    $fixedDirtiesByFieldName = array();
 	    
-	    foreach($dirtiesForRow as $key => $val) {
-	         
-	        $keyParts = explode("-", $key);
-	        $id = $keyParts[0];
-	        $colName = $keyParts[1];
-	        Yii::log("id=" . $id . "; colName=" . $colName, 'info', "");
-	         
-	        $dirty = $dirties[$key];
+	    // NOT associative! just array of dirty (each of which is array with name and value keys)
+	    foreach($dirtiesForRow as $dirty) {
 	         
 	        // TODO: on client-side, arrange to store as special attr on td a key for format-error-type,
 	        //  e.g., multiVal; then, send that into here in the $dirty
@@ -197,6 +191,8 @@ class UploadController extends Controller
 	
 	protected function doFormatFixUpdate($data) {
 	    
+	    //NOTE: dirties is assoc array with key: {bad_row_id}_{columnName|columnNamePartOfHandlerMethod}
+	    
 	    $dirties = $data['dirties'];
 	    
 	    // gather dirties by row (to later attempt to store whole row at once);
@@ -204,7 +200,7 @@ class UploadController extends Controller
 	    //  fixes succeeding, not all required fixes have been provided (by the user)
 	    $dirtiesById = $this->getDirtiesById($dirties);
 	    
-	    // NOTE: 'id', here, is bad_row id
+	    // NOTE: 'id', here, is: {id}_bad_row id
 	    
 	    $badRowDatas = array();
 	    

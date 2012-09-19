@@ -140,7 +140,9 @@ $(document).ready( function () {
                 log(arguments);
 
                 // for bad_rows, rowId is id in bad_rows table; server-side, need to infer original table
-                //  from import_format column therein, with mapping from import_formats to db-tables
+                //  from import_format column therein, with mapping from import_formats to db-tables; and
+                //  don't need row-id in original table yet, because no row is stored in that table until
+                //  ALL its fields are storable (valid)
                 var rowId = $("#example tbody:nth-child(" + iRowIndex + ")").attr('id');
                 var rowData = dataById[rowId];
                 var colName = formatCols[iColumnIndex];
@@ -203,7 +205,7 @@ $(document).ready( function () {
             $('#saveChangesResp').html(data.result);
             setHasUnsavedChanges(false);
         } else {
-            log("ERROR: problem with ajax-result:");
+            log("WARN: not all cell format-fixes successful");
             log(data);
         }
     }
