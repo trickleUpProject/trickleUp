@@ -18,7 +18,7 @@ class UploadController extends Controller
         Yii::import('application.controllers.util.upload.*',true);
         
         //$this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler();
-        $this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler2();
+        $this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler3();
         
         $this->dbModelNameForFormat = array(
             self::FORMAT_3A_2 => "LivestockTracking"

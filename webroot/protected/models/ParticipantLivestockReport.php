@@ -14,11 +14,11 @@
  * @property string $maintenance_cleanliness
  * @property string $KMn04_application
  * @property string $separation_if_pregnant
- * @property string $import_date
+ * @property integer $import_time
  * @property integer $imported_by_user_id
  * @property string $imported_by_user_type
  * @property integer $validated
- * @property string $validated_date
+ * @property integer $validated_time
  * @property integer $validated_by_user_id
  * @property string $validated_by_user_type
  * @property string $format_id
@@ -58,15 +58,14 @@ class ParticipantLivestockReport extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('participant_id, business_id, report_date, report_year, report_quarter, import_date, format_id', 'required'),
-			array('participant_id, business_id, report_year, report_quarter, shed_condition, imported_by_user_id, validated, validated_by_user_id', 'numerical', 'integerOnly'=>true),
+			array('participant_id, business_id, report_date, report_year, report_quarter, import_time, format_id', 'required'),
+			array('participant_id, business_id, report_year, report_quarter, shed_condition, import_time, imported_by_user_id, validated, validated_time, validated_by_user_id', 'numerical', 'integerOnly'=>true),
 			array('maintenance_cleanliness, KMn04_application, separation_if_pregnant', 'length', 'max'=>1),
 			array('imported_by_user_type, validated_by_user_type', 'length', 'max'=>13),
 			array('format_id, source_file_name, unresolved_parse_errors_json', 'length', 'max'=>255),
-			array('validated_date', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, participant_id, business_id, report_date, report_year, report_quarter, shed_condition, maintenance_cleanliness, KMn04_application, separation_if_pregnant, import_date, imported_by_user_id, imported_by_user_type, validated, validated_date, validated_by_user_id, validated_by_user_type, format_id, source_file_name, unresolved_parse_errors_json', 'safe', 'on'=>'search'),
+			array('id, participant_id, business_id, report_date, report_year, report_quarter, shed_condition, maintenance_cleanliness, KMn04_application, separation_if_pregnant, import_time, imported_by_user_id, imported_by_user_type, validated, validated_time, validated_by_user_id, validated_by_user_type, format_id, source_file_name, unresolved_parse_errors_json', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -100,11 +99,11 @@ class ParticipantLivestockReport extends CActiveRecord
 			'maintenance_cleanliness' => 'Maintenance Cleanliness',
 			'KMn04_application' => 'Kmn04 Application',
 			'separation_if_pregnant' => 'Separation If Pregnant',
-			'import_date' => 'Import Date',
+			'import_time' => 'Import Time',
 			'imported_by_user_id' => 'Imported By User',
 			'imported_by_user_type' => 'Imported By User Type',
 			'validated' => 'Validated',
-			'validated_date' => 'Validated Date',
+			'validated_time' => 'Validated Time',
 			'validated_by_user_id' => 'Validated By User',
 			'validated_by_user_type' => 'Validated By User Type',
 			'format_id' => 'Format',
@@ -134,11 +133,11 @@ class ParticipantLivestockReport extends CActiveRecord
 		$criteria->compare('maintenance_cleanliness',$this->maintenance_cleanliness,true);
 		$criteria->compare('KMn04_application',$this->KMn04_application,true);
 		$criteria->compare('separation_if_pregnant',$this->separation_if_pregnant,true);
-		$criteria->compare('import_date',$this->import_date,true);
+		$criteria->compare('import_time',$this->import_time);
 		$criteria->compare('imported_by_user_id',$this->imported_by_user_id);
 		$criteria->compare('imported_by_user_type',$this->imported_by_user_type,true);
 		$criteria->compare('validated',$this->validated);
-		$criteria->compare('validated_date',$this->validated_date,true);
+		$criteria->compare('validated_time',$this->validated_time);
 		$criteria->compare('validated_by_user_id',$this->validated_by_user_id);
 		$criteria->compare('validated_by_user_type',$this->validated_by_user_type,true);
 		$criteria->compare('format_id',$this->format_id,true);
