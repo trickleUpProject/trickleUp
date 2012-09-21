@@ -58,41 +58,15 @@ $(document).ready( function () {
         }
     }
 
-    badRowData = [];
     formatCols = [];
     
-    <?php 
-    $badRows = $model->badRows;
-    //print_r($badRows);
-    
-    if($badRows !== null) {
-       
-       echo "obj = null;\n";
-       
-       $rowCount = 0;
-       
-       foreach($badRows as $badRow) {
-           
-           echo "obj = {};\n";
-           
-           foreach($badRow as $col) {
-               $val = is_numeric($col['value']) ? $col['value'] : ("'" . $col['value'] . "'");
-               echo "obj['" . $col['name'] . "'] = " . $val . ";\n";
-               
-               if($rowCount == 0 && $col['name'] != "bad_row_id") {
-                   echo "formatCols.push('" . $col['name'] . "');\n";
-               }
-           }
-           
-           echo "badRowData.push(obj);\n";
-           $rowCount++;
-       }
-       echo "badRows = true;\n";
-       echo "rowKey = 'bad_row_id';\n";
-       
+    <?php
+    if(property_exists($model, 'formatErrors') && $model->formatErrors != null) {
+        print_r("//" . $model->formatErrors . "\n");
+        echo "formatErrors = " . $model->formatErrors . ";\n";
+        echo "hasFormatErrors = true;\n";
     } else {
-       echo "badRows = false;\n";
-       echo "rowKey = 'id';\n";
+       echo "hasFormatErrors = false;\n";
     }
    ?>
 
@@ -124,8 +98,8 @@ $(document).ready( function () {
     }
     
     // TEMPORARY: simulation of client-side persistence for offline-editing
-    var dataById = {};
-    var dirties = {}; // to avoid sending entire client-side copy to server for updating
+    dataById = {};
+    dirties = {}; // to avoid sending entire client-side copy to server for updating
     
     function initDataTable() {
         
@@ -138,14 +112,13 @@ $(document).ready( function () {
             fnOnEdited: function(result, sOldValue, sNewValue, iRowIndex, iColumnIndex, iRealColumnIndex) {
 
                 log(arguments);
-
-                // for bad_rows, rowId is id in bad_rows table; server-side, need to infer original table
-                //  from import_format column therein, with mapping from import_formats to db-tables; and
-                //  don't need row-id in original table yet, because no row is stored in that table until
-                //  ALL its fields are storable (valid)
-                var rowId = $("#example tbody:nth-child(" + iRowIndex + ")").attr('id');
+                log(dataById);
+                
+                var rowId = $("#example tbody > tr:nth-child(" + (iRowIndex+1) + ")").attr('id');
+                log("rowId: " + rowId);
                 var rowData = dataById[rowId];
                 var colName = formatCols[iColumnIndex];
+                log("colName: " + colName);
                 rowData[colName] = sNewValue;
                 
                 var key = rowId + "-" + colName;
@@ -166,35 +139,44 @@ $(document).ready( function () {
         });
     }
 
+    formatErrorFieldNames = {};
+    
     function addTableRow(obj) {
+        
         var newTr = $('<tr>');
-        newTr.attr('id', obj[rowKey]);
+        var id = obj['id'];
+        newTr.attr('id', id);
         newTr.attr('class', 'odd_gradeX');
         
-        for(var key in obj) {
-            if(key == rowKey) continue;
-            newTr.append($('<td>').text(obj[key]));
-        }
+        var field = obj['field'];
+        newTr.append($('<td>').text(field['value']));
+        formatErrorFieldNames[field['name']] = field['name']; // shortcut to ensure no duplicates
 
         $("#example").find('tbody').append(newTr);
     }
     
     function loadTable(data) {
         log(data);
-        for(var i = 0; i < data.length; i++) {
-            var item = data[i];
+        var statuses = data['statuses'];
+        for(var i = 0; i < statuses.length; i++) {
+            var item = statuses[i];
             addTableRow(item);
-            //dataById[item[rowKey]] = item;
-            dataById[i] = item;
+            dataById[item['id']] = item;
         }
-        initDataTable();
+        //initDataTable(); // but needs to be called here in async (AJAX) case
     }
     
-    if(!badRows) {
+    if(!hasFormatErrors) {
         //execRemote('/index.php?r=upload/ajaxReportData', loadTable);
     } else {
-        log("handling badRows");
-        loadTable(badRowData);
+        log("handling formatErrors");
+        loadTable(formatErrors);
+        for(var fieldName in formatErrorFieldNames) {
+            $('#tblHeader').append($('<th>').text(formatErrorFieldNames[fieldName]));
+            $('#tblFooter').append($('<th>').text(formatErrorFieldNames[fieldName]));
+            formatCols.push(formatErrorFieldNames[fieldName]);
+        }
+        initDataTable();
     }
 
     function handleReportDataUpdateResp(data) {
@@ -271,38 +253,12 @@ $(document).ready( function () {
 
         <table cellpadding="0" cellspacing="0" border="0" class="display" style="width: 800px" id="example">
         	<thead>
-        		<tr>
-        			 
-        		<?php 
-        		     $badRows = $model->badRows;
-        		     //print_r($badRows);
-        		     
-        		     if($badRows !== null) {
-                        $aRowCols = $badRows[0];
-                        foreach($aRowCols as $col) {
-                            if($col['name'] == 'bad_row_id') continue;
-                            echo "<th>" . $col['name'] . "</th>\n";
-                        }
-                     }
-        		 ?>
+        		<tr id="tblHeader">
         			 
         		</tr>
         	</thead>
         	<tfoot>
-        		<tr>
-        			 
-        		<?php 
-        		     $badRows = $model->badRows;
-        		     //print_r($badRows);
-        		     
-        		     if($badRows !== null) {
-                        $aRowCols = $badRows[0];
-                        foreach($aRowCols as $col) {
-                            if($col['name'] == 'bad_row_id') continue;
-                            echo "<th>" . $col['name'] . "</th>\n";
-                        }
-                     }
-        		 ?>
+        		<tr id="tblFooter">
         			 
         		</tr>
         	</tfoot>
@@ -311,7 +267,7 @@ $(document).ready( function () {
         	</tbody>
         </table>
 
-    </div>
+   </div>
 
 </div>
 

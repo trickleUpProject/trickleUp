@@ -75,7 +75,7 @@ class Format3A2Handler3 extends ExcelFormatHandler {
                     $hdlrResult = $refMethod->invokeArgs($formatModel, array($ppLivestockReport, $cellVal));
                     if($hdlrResult) {
                         Yii::log("parse failed: hdlrResult: " . print_r($hdlrResult, true), 'info', "");
-                        $reportParseFailures['report'][] = $hdlrResult;
+                        $reportParseFailures['report'][$hdlrResult['name']] = $hdlrResult;
                     }
                 }
             }
@@ -126,7 +126,7 @@ class Format3A2Handler3 extends ExcelFormatHandler {
                             $validatorResult = $refMethod->invokeArgs($formatModel, array($cellDBColName, $cellVal));
                             if($validatorResult) {
                                 Yii::log("validation failed: validatorResult: " . print_r($validatorResult, true), 'info', "");
-                                $statusParseFailures[] = $validatorResult;
+                                $statusParseFailures['field'] = $validatorResult;
                             }
                         } else {
                             $cellHdlr = $hdlr[Format3A2Model2::CELL_HANDLER];
@@ -136,7 +136,7 @@ class Format3A2Handler3 extends ExcelFormatHandler {
                             
                             if($hdlrResult && array_key_exists('failed', $hdlrResult)) {
                                 Yii::log("parse failed: hdlrResult: " . print_r($hdlrResult, true), 'info', "");
-                                $statusParseFailures[] = $hdlrResult;
+                                $statusParseFailures['field'] = $hdlrResult;
                             }
                         }
                         
@@ -200,7 +200,7 @@ class Format3A2Handler3 extends ExcelFormatHandler {
     }
     
     public function setParseFailuresInLivestockStatus($parseFailures, $livestockStatus) {
-        $parseFailures[] = array('name' => 'id', 'value' => $livestockStatus->getPrimaryKey());
+        $parseFailures['id'] = $livestockStatus->getPrimaryKey();
         $json = CJSON::encode($parseFailures);
         $livestockStatus->unresolved_parse_errors_json = $json;
         Yii::log("setParseFailuresInLivestockStatus: returning json: " . $json, 'error', "");
@@ -208,7 +208,7 @@ class Format3A2Handler3 extends ExcelFormatHandler {
     }
     
     public function setParseFailuresInLivestockReport($parseFailures, $ppLivestockReport) {
-        $parseFailures['report'][] = array('name' => 'id', 'value' => $ppLivestockReport->getPrimaryKey());
+        $parseFailures['report']['id'] = $ppLivestockReport->getPrimaryKey();
         $json = CJSON::encode($parseFailures['report']);
         $ppLivestockReport->unresolved_parse_errors_json = $json;
         return $json;
