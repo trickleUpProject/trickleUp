@@ -103,6 +103,8 @@ class UploadController extends Controller
 	    $fixFailures = array();
 	    $result['fixFailures'] = $fixFailures;
 	    
+	    //TODO: need instance of relevant model, depending upon dirty's table
+	    
 	    $badRow = BadRow::model()->find(
 	                    'id=:id',
 	                    array(':id' => $id)
@@ -148,7 +150,7 @@ class UploadController extends Controller
 	            
 	            $parseResult = null;
 	            if(array_key_exists($field['name'], $fixedDirtiesByFieldName)) {
-	                $parseResult = $fixedDirtiesByFieldName[$field['name']];
+	                $parseResult = $fixedDirtiesByFieldName[$field['name']];  //BUG: but not unique across tables (column-name) !
 	            }
 	            
 	            if($parseResult !== null) {
@@ -162,7 +164,7 @@ class UploadController extends Controller
 	        
 	        Yii::log("saving dbModel: " . $dbModelName, 'info', "");
 	        if(!$dbModel->save()) {
-	            Yii::log($dbModel->getErrors(), 'error', "");
+	            Yii::log("couldn't save " . $dbModel . ": " . $dbModel->getErrors(), 'error', "");
 	            // TODO: tell user that update for this row failed (NOT NULL col-value not provided, etc.)
 	        }
 	        
@@ -186,12 +188,17 @@ class UploadController extends Controller
 	        }
 	    }
 	    
+	    if(!$badRow->save()) {
+	        Yii::log("couldn't save badRow: " . $badRow->getErrors(), 'error', "");
+	    }
+	    
 	    return $badRowData; // maybe instead access (at call-site) within $fixFailureResult?
 	}
 	
 	protected function doFormatFixUpdate($data) {
 	    
-	    //NOTE: dirties is assoc array with key: {bad_row_id}_{columnName|columnNamePartOfHandlerMethod}
+	    //NOTE: dirties is assoc array with key: {id}_{columnName|columnNamePartOfHandlerMethod},
+	    // where 'id' is PK in relevant table; so, need to pass around the table-names too (?)
 	    
 	    $dirties = $data['dirties'];
 	    
@@ -199,8 +206,6 @@ class UploadController extends Controller
 	    //  won't get that far if any of the fixes fails; or if, even with all 
 	    //  fixes succeeding, not all required fixes have been provided (by the user)
 	    $dirtiesById = $this->getDirtiesById($dirties);
-	    
-	    // NOTE: 'id', here, is: {id}_bad_row id
 	    
 	    $badRowDatas = array();
 	    

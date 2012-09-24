@@ -50,7 +50,7 @@
  
 <script type="text/javascript" charset="utf-8">
 
-$(document).ready( function () {
+$(document).ready( function() {
 
     function log(msg) {
         if(console && console.log) {
@@ -71,7 +71,8 @@ $(document).ready( function () {
    ?>
 
    //TODO: need to set all cells "read-only" that are part of a key in the DB,
-   //  because you're not allowed to change them (in the DB)
+   //  because you're not allowed to change them (in the DB); so, when errors therein
+   //  need to delete row and re-insert?
     
     function execRemote(url, callback, dataToPOST) {
         var dataStr = dataToPOST != null ? ("data=" + JSON.stringify(dataToPOST)) : dataToPOST;
@@ -101,11 +102,11 @@ $(document).ready( function () {
     dataById = {};
     dirties = {}; // to avoid sending entire client-side copy to server for updating
     
-    function initDataTable() {
+    function initDataTable(model) {
         
-        $('#example').dataTable().makeEditable({
+        $('#' + model).dataTable().makeEditable({
             
-            //sUpdateURL: "UpdateData.php", //On the code.google.com POST request is not supported so this line is commented out
+            //sUpdateURL: "UpdateData.php",
             sUpdateURL: function(value, settings) {
                 return value; //Simulation of server-side response using a callback function
             },
@@ -113,7 +114,10 @@ $(document).ready( function () {
 
                 log(arguments);
                 log(dataById);
+
+                //TODO: make this model-specific; research IndexDB for how, in part
                 
+                //FIXME: reference "#{model}" here, not "#example": store model in current closure, if not already
                 var rowId = $("#example tbody > tr:nth-child(" + (iRowIndex+1) + ")").attr('id');
                 log("rowId: " + rowId);
                 var rowData = dataById[rowId];
@@ -141,7 +145,9 @@ $(document).ready( function () {
 
     formatErrorFieldNames = {};
     
-    function addTableRow(obj) {
+    function addTableRow(model, obj) {
+
+        if(!formatErrorFieldNames[model]) formatErrorFieldNames[model] = {};
         
         var newTr = $('<tr>');
         var id = obj['id'];
@@ -150,33 +156,80 @@ $(document).ready( function () {
         
         var field = obj['field'];
         newTr.append($('<td>').text(field['value']));
-        formatErrorFieldNames[field['name']] = field['name']; // shortcut to ensure no duplicates
+        
+        formatErrorFieldNames[model][field['name']] = field['name']; // shortcut to ensure no duplicates (per model)
 
-        $("#example").find('tbody').append(newTr);
+        $("#" + model).find('tbody').append(newTr);
+    }
+
+    function ensureTable(model) {
+
+        $divClone = $("#demo").clone(false);
+        $divClone.attr('id', model + "_demo");
+        $divClone.css('display', 'block');
+        
+        $divClone.find("*[id]").andSelf().each(function() {
+                $(this).attr('id',function(i,id) {
+                    log("id: " + id);
+                    var suffix, uscoreIdx;
+                    if((uscoreIdx = id.lastIndexOf('-')) != -1) {
+                        log("uscoreIdx: " + uscoreIdx);
+                        suffix = id.substring(uscoreIdx+1);
+                        id = model + "_" + suffix;
+                    } else {
+                        id = model;
+                    }
+                    log("new id: " + id);
+                    return id;
+                });
+            }
+        );
+        $divClone.insertAfter('#demo');
+        
     }
     
-    function loadTable(data) {
+    function loadTable(model, data) {
+
         log(data);
-        var statuses = data['statuses'];
-        for(var i = 0; i < statuses.length; i++) {
-            var item = statuses[i];
-            addTableRow(item);
+        
+        ensureTable(model);
+        
+        for(var i = 0; i < data.length; i++) {
+            var item = data[i];
+            addTableRow(model, item);
             dataById[item['id']] = item;
         }
-        //initDataTable(); // but needs to be called here in async (AJAX) case
+        
+        //initDataTable(model); // but needs to be called here in async (AJAX) case
     }
     
     if(!hasFormatErrors) {
         //execRemote('/index.php?r=upload/ajaxReportData', loadTable);
     } else {
+
         log("handling formatErrors");
+
+        // iterate over top-level keys, which would be table-names, each to be associated with an instance of DataTable?
+        // use JQuery-clone() to create any additional needed DataTable instances? (each needs own id, for JQuery-access);
+        // foreach such entry in formatErrors, always have each table's set of field-errors in an array, even if there's
+        // only one entry (e.g., for "report" -- i.e., values appearing only once in a given report); then, loadTable()
+        // for each such array, passing in table-name; maybe use table-name as value of 'id'
+        
+        for(var model in formatErrors) {
+            loadTable(model, formatErrors[model]);
+        }
+
+        /*
         loadTable(formatErrors);
+        
         for(var fieldName in formatErrorFieldNames) {
             $('#tblHeader').append($('<th>').text(formatErrorFieldNames[fieldName]));
             $('#tblFooter').append($('<th>').text(formatErrorFieldNames[fieldName]));
             formatCols.push(formatErrorFieldNames[fieldName]);
         }
-        initDataTable();
+        */
+        
+        initDataTable(model);
     }
 
     function handleReportDataUpdateResp(data) {
@@ -242,31 +295,17 @@ $(document).ready( function () {
     <span id="saveUnsavedChanges">
         Save Unsaved Changes
     </span><br/>
-    <span id="saveChangesResp">
-        
-    </span>
+    <span id="saveChangesResp"></span>
 </div>
 
 <div id="container">
 
-    <div id="demo" style="width: 800px; overflow: auto">
-
+    <div id="demo" style="display: none; width: 800px; overflow: auto">
         <table cellpadding="0" cellspacing="0" border="0" class="display" style="width: 800px" id="example">
-        	<thead>
-        		<tr id="tblHeader">
-        			 
-        		</tr>
-        	</thead>
-        	<tfoot>
-        		<tr id="tblFooter">
-        			 
-        		</tr>
-        	</tfoot>
-        	<tbody>
-
-        	</tbody>
+        	<thead><tr id="example_tblHeader"></tr></thead>
+        	<tfoot><tr id="example_tblFooter"></tr></tfoot>
+        	<tbody></tbody>
         </table>
-
    </div>
 
 </div>

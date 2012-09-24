@@ -1,26 +1,14 @@
 <?php
 
-class Format3A2Model2 {
-
-    const CELL_TYPE = 'cellType';
-    const CELL_ADDRESS = 'cellAddress';
-    const CELL_HANDLER = 'cellHandler';
-    const CELL_DB_COL_NAME = 'cellDBColName';
-    const CELL_VALIDATOR = 'cellValidator';
-    const CELL_VALIDATOR_IN_HANDLER = 'cellValidatorInHandler';
+class Format3A2Model2 extends FormatModel {
     
-    const COL_RANGE = 'colRange';
-    const HEADER_ROW = 'headerRow';
-    const ROW_RANGE = 'rowRange';
-    const ROW_HANDLERS = 'rowHandlers';
+    // associated DB-Models
+    const MODEL_REPORT = "ParticipantLivestockReport";
+    const MODEL_LIVESTOCK_STATUS = "LivestockStatus";
     
-    const CELL_TYPE_SIMPLE = 'simple';
-    const CELL_TYPE_RANGE = 'range';
-    const CELL_TYPE_COMPLEX = 'complex';
-    const CELL_TYPE_COMPOUND = 'compound';
-    
-    // special areas, if any
+    // special excel-doc areas, if any
     const RANGE_LIVESTOCK_STATUS = 'livestockStatusRange';
+    
     
     private $cellMap;
 
