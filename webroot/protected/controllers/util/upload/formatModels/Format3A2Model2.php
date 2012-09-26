@@ -17,88 +17,88 @@ class Format3A2Model2 extends FormatModel {
         
         $this->cellMap = array(
             'shed_condition' => array(
-                            self::CELL_TYPE => self::CELL_TYPE_COMPLEX, 
-                            self::CELL_ADDRESS => 'E15', 
-                            self::CELL_HANDLER => 'complex_ShedCondition'
+                            FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_COMPLEX, 
+                            FormatModel::CELL_ADDRESS => 'E15', 
+                            FormatModel::CELL_HANDLER => 'complex_ShedCondition'
                             ),
             'maintenance_cleanliness' => array(
-                            self::CELL_TYPE => self::CELL_TYPE_COMPLEX, 
-                            self::CELL_ADDRESS => 'I15',
-                            self::CELL_HANDLER => 'complex_MaintenanceCleanliness'
+                            FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_COMPLEX, 
+                            FormatModel::CELL_ADDRESS => 'I15',
+                            FormatModel::CELL_HANDLER => 'complex_MaintenanceCleanliness'
                             ),
             'KMn04_application' => array(
-                            self::CELL_TYPE => self::CELL_TYPE_COMPLEX, 
-                            self::CELL_ADDRESS => 'A16',
-                            self::CELL_HANDLER => 'complex_KMn04Application'
+                            FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_COMPLEX, 
+                            FormatModel::CELL_ADDRESS => 'A16',
+                            FormatModel::CELL_HANDLER => 'complex_KMn04Application'
                             ),
             'separation_if_pregnant' => array(
-                            self::CELL_TYPE => self::CELL_TYPE_COMPLEX, 
-                            self::CELL_ADDRESS => 'A15',
-                            self::CELL_HANDLER => 'complex_SeparationIfPregnant'
+                            FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_COMPLEX, 
+                            FormatModel::CELL_ADDRESS => 'A15',
+                            FormatModel::CELL_HANDLER => 'complex_SeparationIfPregnant'
                             ),
                         
             //////////////////////////////////////////////////
         
             self::RANGE_LIVESTOCK_STATUS => array(
-                self::COL_RANGE => array(1,12),
-                self::HEADER_ROW => 4,
-                self::ROW_RANGE => array(5, 14),
-                self::ROW_HANDLERS => array(
+                FormatModel::COL_RANGE => array(1,12),
+                FormatModel::HEADER_ROW => 4,
+                FormatModel::ROW_RANGE => array(5, 14),
+                FormatModel::ROW_HANDLERS => array(
                     'r5' => array( // age_months
-                                    self::CELL_TYPE => self::CELL_TYPE_SIMPLE, 
-                                    self::CELL_DB_COL_NAME => 'age_months',
-                                    self::CELL_HANDLER => 'getSimpleCellValue', 
-                                    self::CELL_VALIDATOR => 'getInt'
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE, 
+                                    FormatModel::CELL_DB_COL_NAME => 'age_months',
+                                    FormatModel::CELL_HANDLER => 'getSimpleCellValue', 
+                                    FormatModel::CELL_VALIDATOR => 'getInt'
                                     ),
                     'r6' => array( // weight_kg
-                                    self::CELL_TYPE => self::CELL_TYPE_SIMPLE,
-                                    self::CELL_DB_COL_NAME => 'weight_kg',
-                                    self::CELL_HANDLER => 'getSimpleCellValue',
-                                    self::CELL_VALIDATOR => 'getDecimal'
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE,
+                                    FormatModel::CELL_DB_COL_NAME => 'weight_kg',
+                                    FormatModel::CELL_HANDLER => 'getSimpleCellValue',
+                                    FormatModel::CELL_VALIDATOR => 'getDecimal'
                     ),
                     'r7' => array( // deworm
-                                    self::CELL_TYPE => self::CELL_TYPE_SIMPLE,
-                                    self::CELL_DB_COL_NAME => 'deworm',
-                                    self::CELL_HANDLER => 'getSimpleCellValue',
-                                    self::CELL_VALIDATOR => 'getDate'
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE,
+                                    FormatModel::CELL_DB_COL_NAME => 'deworm',
+                                    FormatModel::CELL_HANDLER => 'getSimpleCellValue',
+                                    FormatModel::CELL_VALIDATOR => 'getDate'
                     ),
                     'r8' => array( // problem_conceiving
-                                    self::CELL_TYPE => self::CELL_TYPE_SIMPLE,
-                                    self::CELL_DB_COL_NAME => 'problem_conceiving',
-                                    self::CELL_HANDLER => 'getSimpleCellValue',
-                                    self::CELL_VALIDATOR => 'getYesNo'
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE,
+                                    FormatModel::CELL_DB_COL_NAME => 'problem_conceiving',
+                                    FormatModel::CELL_HANDLER => 'getSimpleCellValue',
+                                    FormatModel::CELL_VALIDATOR => 'getYesNo'
                     ),
                     'r9' => array( // concentrate_during_pregnancy
-                                    self::CELL_TYPE => self::CELL_TYPE_SIMPLE,
-                                    self::CELL_DB_COL_NAME => 'concentrate_during_pregnancy',
-                                    self::CELL_HANDLER => 'getSimpleCellValue',
-                                    self::CELL_VALIDATOR => 'getYesNo'
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE,
+                                    FormatModel::CELL_DB_COL_NAME => 'concentrate_during_pregnancy',
+                                    FormatModel::CELL_HANDLER => 'getSimpleCellValue',
+                                    FormatModel::CELL_VALIDATOR => 'getYesNo'
                     ),
                     'r10' => array( // miscarriage_date, miscarriage_reason
-                                    self::CELL_TYPE => self::CELL_TYPE_COMPOUND,
-                                    self::CELL_HANDLER => 'compound_MisCarriageDateAndReason',
-                                    self::CELL_VALIDATOR => self::CELL_VALIDATOR_IN_HANDLER
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_COMPOUND,
+                                    FormatModel::CELL_HANDLER => 'compound_MisCarriageDateAndReason',
+                                    FormatModel::CELL_VALIDATOR => self::CELL_VALIDATOR_IN_HANDLER
                     ),
                     'r11' => array( // delivery_date
-                                    self::CELL_TYPE => self::CELL_TYPE_SIMPLE,
-                                    self::CELL_DB_COL_NAME => 'delivery_date',
-                                    self::CELL_HANDLER => 'getSimpleCellValue',
-                                    self::CELL_VALIDATOR => 'getDate'
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE,
+                                    FormatModel::CELL_DB_COL_NAME => 'delivery_date',
+                                    FormatModel::CELL_HANDLER => 'getSimpleCellValue',
+                                    FormatModel::CELL_VALIDATOR => 'getDate'
                     ),
                     'r12' => array( // num_kids_born_m, num_kids_born_f
-                                    self::CELL_TYPE => self::CELL_TYPE_COMPOUND,
-                                    self::CELL_HANDLER => 'compound_NumKidsBornMF',
-                                    self::CELL_VALIDATOR => self::CELL_VALIDATOR_IN_HANDLER
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_COMPOUND,
+                                    FormatModel::CELL_HANDLER => 'compound_NumKidsBornMF',
+                                    FormatModel::CELL_VALIDATOR => FormatModel::CELL_VALIDATOR_IN_HANDLER
                     ),
                     'r13' => array( // death_date, death_reason
-                                    self::CELL_TYPE => self::CELL_TYPE_COMPOUND,
-                                    self::CELL_HANDLER => 'compound_DeathDateAndReason',
-                                    self::CELL_VALIDATOR => self::CELL_VALIDATOR_IN_HANDLER
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_COMPOUND,
+                                    FormatModel::CELL_HANDLER => 'compound_DeathDateAndReason',
+                                    FormatModel::CELL_VALIDATOR => FormatModel::CELL_VALIDATOR_IN_HANDLER
                     ),
                     'r14' => array( // sale_date, sale_price
-                                    self::CELL_TYPE => self::CELL_TYPE_COMPOUND,
-                                    self::CELL_HANDLER => 'compound_SaleDateAndPrice',
-                                    self::CELL_VALIDATOR => self::CELL_VALIDATOR_IN_HANDLER
+                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_COMPOUND,
+                                    FormatModel::CELL_HANDLER => 'compound_SaleDateAndPrice',
+                                    FormatModel::CELL_VALIDATOR => FormatModel::CELL_VALIDATOR_IN_HANDLER
                     )
 
                 )
@@ -142,59 +142,68 @@ class Format3A2Model2 extends FormatModel {
     
     public function complex_ShedCondition($report, $str) {
         if(!$str) return null;
+        $errResult = array('failed' => true, 'name' => 'ShedCondition', 'value' => $str);
         try {
             // "Shed condition: ______ / 5"  // do I seriously have to translate a count of underscores into a number?
             $parts = explode(':', $str);
+            if(!$parts || count($parts) < 2) return $errResult;
             $part = $parts[1];
             $parts = explode('/', $part);
+            if(!$parts || count($parts) < 2) return $errResult;
             $result = trim($parts[0]);
             $report->shed_condition = $result;
             return null;
         } 
         catch(Exception $e) {
-            return array('failed' => true, 'name' => 'ShedCondition', 'value' => $str);
+            return $errResult;
         }
     }
     
     public function complex_MaintenanceCleanliness($report, $str) {
         if(!$str) return null;
+        $errResult = array('failed' => true, 'name' => 'MaintenanceCleanliness', 'value' => $str);
         try {
             // "Maintenance & Cleanliness (Y/N):"
             $parts = explode(':', $str);
+            if(!$parts || count($parts) < 2) return $errResult;
             $result = trim($parts[1]);
             $report->maintenance_cleanliness = $result;
             return null;
         } 
         catch(Exception $e) {
-            return array('failed' => true, 'name' => 'MaintenanceCleanliness', 'value' => $str);
+            return $errResult;
         }
     }
     
     public function complex_KMn04Application($report, $str) {
         if(!$str) return null;
+        $errResult = array('failed' => true, 'name' => 'KMn04Application', 'value' => $str);
         try {
             // "KMnO4 appication before and after delivery (Y/N):"
             $parts = explode(':', $str);
+            if(!$parts || count($parts) < 2) return $errResult;
             $result = trim($parts[1]);
             $report->KMn04_application = $result;
             return null;
         } 
         catch(Exception $e) {
-            return array('failed' => true, 'name' => 'KMn04Application', 'value' => $str);
+            return $errResult;
         }
     }
     
     public function complex_SeparationIfPregnant($report, $str) {
         if(!$str) return null;
+        $errResult = array('failed' => true, 'name' => 'SeparationIfPregnant', 'value' => $str);
         try {
             // Separation of pregnant goat (Y/N / N.A.): N
             $parts = explode(':', $str);
+            if($parts || count($parts) < 2) return $errResult;
             $result = trim($parts[1]);
             $report->separation_if_pregnant = $result;
             return null;
         } 
         catch(Exception $e) {
-            return array('failed' => true, 'name' => 'SeparationIfPregnant', 'value' => $str);
+            return $errResult;
         }
     }
     

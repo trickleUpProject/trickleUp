@@ -58,7 +58,7 @@ $(document).ready( function() {
         }
     }
 
-    formatCols = [];
+    formatCols = {};
     
     <?php
     if(property_exists($model, 'formatErrors') && $model->formatErrors != null) {
@@ -103,8 +103,10 @@ $(document).ready( function() {
     dirties = {}; // to avoid sending entire client-side copy to server for updating
     
     function initDataTable(model) {
+
+        var myModel = model;
         
-        $('#' + model).dataTable().makeEditable({
+        $('#' + myModel).dataTable().makeEditable({
             
             //sUpdateURL: "UpdateData.php",
             sUpdateURL: function(value, settings) {
@@ -114,30 +116,33 @@ $(document).ready( function() {
 
                 log(arguments);
                 log(dataById);
-
-                //TODO: make this model-specific; research IndexDB for how, in part
                 
-                //FIXME: reference "#{model}" here, not "#example": store model in current closure, if not already
-                var rowId = $("#example tbody > tr:nth-child(" + (iRowIndex+1) + ")").attr('id');
+                var rowId = $("#" + myModel + " tbody > tr:nth-child(" + (iRowIndex+1) + ")").attr('id');
                 log("rowId: " + rowId);
-                var rowData = dataById[rowId];
-                var colName = formatCols[iColumnIndex];
+                rowId = rowId.split("_"); // has model as prefix
+                rowId = rowId[1];
+                var rowData = dataById[myModel][rowId];
+                
+                var colName = formatCols[myModel][iColumnIndex];
                 log("colName: " + colName);
+                
                 rowData[colName] = sNewValue;
+                log('rowData[' + colName + ']: ' + rowData[colName]);
                 
                 var key = rowId + "-" + colName;
+
+                if(!dirties[model]) dirties[model] = {};
                 
-                if(dirties[key]) {
+                if(dirties[model][key]) {
                     dirties[key].value = sNewValue;
                 } else {
-                    dirties[key] = {
+                    dirties[model][key] = {
                         "id": rowId,
                         "colName": colName,
                         "value": sNewValue
                     };
                 }
                 
-                log('rowData[' + colName + ']: ' + rowData[colName]);
                 setHasUnsavedChanges(true);
             }
         });
@@ -147,16 +152,15 @@ $(document).ready( function() {
     
     function addTableRow(model, obj) {
 
-        if(!formatErrorFieldNames[model]) formatErrorFieldNames[model] = {};
-        
         var newTr = $('<tr>');
         var id = obj['id'];
-        newTr.attr('id', id);
+        newTr.attr('id', model + "_" + id);
         newTr.attr('class', 'odd_gradeX');
         
         var field = obj['field'];
         newTr.append($('<td>').text(field['value']));
-        
+
+        if(!formatErrorFieldNames[model]) formatErrorFieldNames[model] = {};
         formatErrorFieldNames[model][field['name']] = field['name']; // shortcut to ensure no duplicates (per model)
 
         $("#" + model).find('tbody').append(newTr);
@@ -168,11 +172,12 @@ $(document).ready( function() {
         $divClone.attr('id', model + "_demo");
         $divClone.css('display', 'block');
         
-        $divClone.find("*[id]").andSelf().each(function() {
+        //$divClone.find("*[id]").andSelf().each(function() {
+        $divClone.find("*[id]").each(function() {
                 $(this).attr('id',function(i,id) {
                     log("id: " + id);
                     var suffix, uscoreIdx;
-                    if((uscoreIdx = id.lastIndexOf('-')) != -1) {
+                    if((uscoreIdx = id.lastIndexOf('_')) != -1) {
                         log("uscoreIdx: " + uscoreIdx);
                         suffix = id.substring(uscoreIdx+1);
                         id = model + "_" + suffix;
@@ -184,20 +189,21 @@ $(document).ready( function() {
                 });
             }
         );
-        $divClone.insertAfter('#demo');
         
+        $divClone.insertAfter('#demo');
     }
     
     function loadTable(model, data) {
 
         log(data);
-        
         ensureTable(model);
+        
+        if(!dataById[model]) dataById[model] = {};
         
         for(var i = 0; i < data.length; i++) {
             var item = data[i];
             addTableRow(model, item);
-            dataById[item['id']] = item;
+            dataById[model][item['id']] = item;
         }
         
         //initDataTable(model); // but needs to be called here in async (AJAX) case
@@ -219,15 +225,21 @@ $(document).ready( function() {
             loadTable(model, formatErrors[model]);
         }
 
-        /*
-        loadTable(formatErrors);
-        
-        for(var fieldName in formatErrorFieldNames) {
-            $('#tblHeader').append($('<th>').text(formatErrorFieldNames[fieldName]));
-            $('#tblFooter').append($('<th>').text(formatErrorFieldNames[fieldName]));
-            formatCols.push(formatErrorFieldNames[fieldName]);
+        for(var model in formatErrorFieldNames) {
+
+            var errorFieldNames = formatErrorFieldNames[model];
+
+            if(!formatCols[model]) formatCols[model] = [];
+            var hrdId = '#' + model + '_tblHeader';
+            var ftrId = '#' + model + '_tblFooter';
+            
+            for(var fieldName in errorFieldNames) {
+                $(hrdId).append($('<th>').text(errorFieldNames[fieldName]));
+                $(ftrId).append($('<th>').text(errorFieldNames[fieldName]));
+
+                formatCols[model].push(errorFieldNames[fieldName]);
+            }
         }
-        */
         
         initDataTable(model);
     }
@@ -300,6 +312,7 @@ $(document).ready( function() {
 
 <div id="container">
 
+    <!-- a 'prototype', cloned via JQuery as needed -->
     <div id="demo" style="display: none; width: 800px; overflow: auto">
         <table cellpadding="0" cellspacing="0" border="0" class="display" style="width: 800px" id="example">
         	<thead><tr id="example_tblHeader"></tr></thead>

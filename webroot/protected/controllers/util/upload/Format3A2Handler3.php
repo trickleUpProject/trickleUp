@@ -12,7 +12,9 @@ class Format3A2Handler3 extends ExcelFormatHandler {
         // TODO: do all the following for each sheet in current Excel-doc
         $objWorksheet = $objPHPExcel->getActiveSheet();
         
-        Yii::import('application.controllers.util.upload.formatModels.Format3A2Model2',true);
+        Yii::import('application.controllers.util.upload.formatModels.*',true);
+        //Yii::import('application.controllers.util.upload.formatModels.Format3A2Model2',true);
+        
         Yii::log("instantiating Format3A2Model2", 'info', "");
         $formatModel = new Format3A2Model2();
         $refFormatModel = new ReflectionClass('Format3A2Model2');
@@ -51,7 +53,8 @@ class Format3A2Handler3 extends ExcelFormatHandler {
         
         // using nested array here for 'report' to simplify front-end: it just iterates
         // over the errors-array for each table; in case of 'report', it happens to iterate only once
-        $reportParseFailures = array(self::MODEL_REPORT => array(array()), self::MODEL_LIVESTOCK_STATUS => array());
+        $reportParseFailures = array(Format3A2Model2::MODEL_REPORT => array(array()), 
+                                     Format3A2Model2::MODEL_LIVESTOCK_STATUS => array());
         
         
         foreach($cellMap as $key => $cellDescr) {
@@ -76,7 +79,8 @@ class Format3A2Handler3 extends ExcelFormatHandler {
                     $hdlrResult = $refMethod->invokeArgs($formatModel, array($ppLivestockReport, $cellVal));
                     if($hdlrResult) {
                         Yii::log("parse failed: hdlrResult: " . print_r($hdlrResult, true), 'info', "");
-                        $reportParseFailures[Format3A2Model2::MODEL_REPORT][0][$hdlrResult['name']] = $hdlrResult;
+                                                                       // 'id' for each report-level item to be added below
+                        $reportParseFailures[Format3A2Model2::MODEL_REPORT][0][] = array('field' => $hdlrResult);
                     }
                 }
             }
@@ -177,7 +181,7 @@ class Format3A2Handler3 extends ExcelFormatHandler {
             //  i.e., these are format-errors, not factual errors; only factual errors should require
             //  contextual details (associated id's, etc.) -- other than PK of given item
             
-            $str = '{' . Format3A2Model2::MODEL_REPORT . ':' . $reportParseFailures[Format3A2Model2::MODEL_REPORT][0] . 
+            $str = '{"' . Format3A2Model2::MODEL_REPORT . '":' . $reportParseFailures[Format3A2Model2::MODEL_REPORT][0] . 
                         ', "' . Format3A2Model2::MODEL_LIVESTOCK_STATUS .'":[';
             
             $numStats = count($reportParseFailures[Format3A2Model2::MODEL_LIVESTOCK_STATUS]);
@@ -209,8 +213,17 @@ class Format3A2Handler3 extends ExcelFormatHandler {
     }
     
     public function setParseFailuresInLivestockReport($parseFailures, $ppLivestockReport) {
-        $parseFailures[Format3A2Model2::MODEL_REPORT][0]['id'] = $ppLivestockReport->getPrimaryKey();
-        $json = CJSON::encode($parseFailures[Format3A2Model2::MODEL_REPORT][0]);
+        
+        //$parseFailures[Format3A2Model2::MODEL_REPORT][0]['id'] = $ppLivestockReport->getPrimaryKey();
+        
+        $pk = $ppLivestockReport->getPrimaryKey();
+        $failures = $parseFailures[Format3A2Model2::MODEL_REPORT][0];
+        
+        foreach($failures as $failure) {
+            $failure['id'] = $pk;
+        }
+        
+        $json = CJSON::encode($failures);
         $ppLivestockReport->unresolved_parse_errors_json = $json;
         return $json;
     }

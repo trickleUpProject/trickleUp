@@ -17,7 +17,6 @@ class UploadController extends Controller
     {
         Yii::import('application.controllers.util.upload.*',true);
         
-        //$this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler();
         $this->excelFormatHandlers[self::FORMAT_3A_2] = new Format3A2Handler3();
         
         $this->dbModelNameForFormat = array(
@@ -35,7 +34,7 @@ class UploadController extends Controller
 		);
 	}
 	
-	
+	/*
 	// TODO: TEMPORARY IMPLEMENTATION: specific to LivestockTracking; needs to be generalized
 	public function actionAjaxReportData() {
 	    
@@ -250,6 +249,7 @@ class UploadController extends Controller
 	        }
 	    }
 	}
+	*/
 	
 	/*
 	public function actionAjaxReportDataUpdate() {
@@ -304,9 +304,10 @@ class UploadController extends Controller
 	    Yii::log("running actionUploadExcel", 'info', "");
 	    
 	    $model = new UploadForm;
-		
+	    
 	    if(isset($_POST['UploadForm']))
 	    {
+	        
 	        Yii::log("handling file-upload", 'info', "");
 	        
 	        $docRoot = getenv("DOCUMENT_ROOT");
@@ -353,6 +354,7 @@ class UploadController extends Controller
 	                    $model->formatErrors = $result;
 	                }
 	                
+	                
 	            } else {
 	                Yii::log("no ExcelFormatHandler found for [fileName]!", 'error', "");
 	            }
@@ -362,6 +364,7 @@ class UploadController extends Controller
 	        }
 	        
 	        $this->render('uploadExcel',array('model' => $model));
+	        
 	    } 
 	    else 
 	    {
