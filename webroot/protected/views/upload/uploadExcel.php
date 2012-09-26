@@ -107,6 +107,8 @@ $(document).ready( function() {
         var myModel = model;
         
         $('#' + myModel).dataTable().makeEditable({
+
+            sDom: 'T<"clear">lfrtip', // controls how nodes are injected for table-controls (?)
             
             //sUpdateURL: "UpdateData.php",
             sUpdateURL: function(value, settings) {
@@ -169,7 +171,8 @@ $(document).ready( function() {
     function ensureTable(model) {
 
         $divClone = $("#demo").clone(false);
-        $divClone.attr('id', model + "_demo");
+        $divCloneId = model + "_demo";
+        $divClone.attr('id', $divCloneId);
         $divClone.css('display', 'block');
         
         //$divClone.find("*[id]").andSelf().each(function() {
@@ -191,6 +194,7 @@ $(document).ready( function() {
         );
         
         $divClone.insertAfter('#demo');
+        $('<div/>', {style: "height: 50px"}).insertAfter("#" + $divCloneId);
     }
     
     function loadTable(model, data) {
@@ -240,8 +244,11 @@ $(document).ready( function() {
                 formatCols[model].push(errorFieldNames[fieldName]);
             }
         }
-        
-        initDataTable(model);
+
+        // don't init any DataTables until ALL to be so treated are ready for it (required?)
+        for(var model in formatErrors) {
+            initDataTable(model);
+        }
     }
 
     function handleReportDataUpdateResp(data) {
