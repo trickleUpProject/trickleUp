@@ -11,9 +11,20 @@ class Format3A2Model2 extends FormatModel {
     
     
     private $cellMap;
-
+    private $simpleDescrForColName;
+    
 
     public function __construct() {
+        
+        $this->$simpleDescrForColName = array(
+            "age_months" => array(
+                                     FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE,
+                                     FormatModel::CELL_DB_COL_NAME => 'age_months',
+                                     FormatModel::CELL_HANDLER => 'getSimpleCellValue',
+                                     FormatModel::CELL_VALIDATOR => 'getInt'
+                                 )
+            //TODO: add the other "simples" here, and reference them below where needed
+        );
         
         $this->cellMap = array(
             'shed_condition' => array(
@@ -44,12 +55,7 @@ class Format3A2Model2 extends FormatModel {
                 FormatModel::HEADER_ROW => 4,
                 FormatModel::ROW_RANGE => array(5, 14),
                 FormatModel::ROW_HANDLERS => array(
-                    'r5' => array( // age_months
-                                    FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE, 
-                                    FormatModel::CELL_DB_COL_NAME => 'age_months',
-                                    FormatModel::CELL_HANDLER => 'getSimpleCellValue', 
-                                    FormatModel::CELL_VALIDATOR => 'getInt'
-                                    ),
+                    'r5' => $this->$simpleDescrForColName['age_months'],
                     'r6' => array( // weight_kg
                                     FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE,
                                     FormatModel::CELL_DB_COL_NAME => 'weight_kg',
@@ -108,6 +114,12 @@ class Format3A2Model2 extends FormatModel {
         );
     }
     
+    public function getSimpleDescrForColName($colName) {
+        if(array_key_exists($colName, $this->simpleDescrForColName)) {
+            return $this->simpleDescrForColName[$colName];
+        }
+        return null;
+    }
     
     public function getCellMap() {
         return $this->cellMap;
