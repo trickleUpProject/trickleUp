@@ -8,6 +8,9 @@ class UploadController extends Controller
     
     const ERROR_TYPE_MULTI_VAL = 'multiVal';
     
+    const METHOD_PREFIX_COMPOUND = 'compound_handle_';
+    const METHOD_PREFIX_COMPLEX = 'complex_handle_';
+    
     private $excelFormatHandlers;
     
     private $dbModelNameForFormat;
@@ -52,27 +55,6 @@ class UploadController extends Controller
 	}
 	
 	
-	
-	protected function doMultiValFix(&$fixFailures, &$dirty, $badRow) {
-	    
-	    $importFormat = $badRow->import_format;
-        $formatHdlr = $this->excelFormatHandlers[$importFormat];
-        $formatModel = $formatHdlr->getModel();
-        $methodName = "compound_handle_" . $dirty['name'];
-        
-        Yii::log("doMultiValFix: calling formatModel-method: " . $methodName, 'info', "");
-        // 'null' here is original-table model's instance
-        $parseResult = $formatModel->$methodName(null, $val);
-        
-        if($parseResult !== null) {
-            if($parseResult['error']) {
-                $fixFailures[] = $parseResult;
-            } else {
-                $dirty['parseResult'] = $parseResult;
-            }
-        }
-	}
-	
 	protected function getDirtiesById($dirties) {
 	    
 	    $dirtiesById = array();
@@ -107,6 +89,8 @@ class UploadController extends Controller
 	                    array(':id' => $id)
 	    );
 	    
+	    //FIXME: ensure model found
+	    
 	    $result['model'] =& $model;
 	    $importFormat = $model->import_format;
 	    
@@ -115,8 +99,11 @@ class UploadController extends Controller
 	    
 	    $fixedDirtiesByFieldName = array();
 	    
+	    $formatHdlr = $this->excelFormatHandlers[$importFormat];
+	    $formatModel = $formatHdlr->getModel();
+	    
 	    // NOT associative! just array of dirty (each of which is array with keys: name, value, etc.)
-	    foreach($dirtiesForRow as $dirty) {
+	    foreach($dirtiesForRow as &$dirty) {
 	        
 	        // for model field-validation, see: http://www.yiiframework.com/wiki/56/
 	        // should use Yii's built-in validators where possible; need to configure
@@ -124,28 +111,59 @@ class UploadController extends Controller
 	        // "YesOrNo"
 	        
 	        if(property_exists($model, $dirty['name'])) {
-	            //TODO: add method to ExcelDocHandler: validate()
-	            // have it use its FormatModel to look up the required validator
-	            // and invoke it and return the result to here; or pass in refs to
-	            // dirty and to fixFailures and have the Handler update them as needed
+	            
+	            $cellDescr = $formatModel->getSimpleDescrForColName($dirty['name']);
+	            if($cellDescr) {
+	                $validatorMethodName = $cellDescr[FormatModel::CELL_VALIDATOR];
+	                $method = new ReflectionMethod($formatModel, $validatorMethodName);
+	                $parseResult = $method->invokeArgs($formatModel, array($dirty['name'], $dirty['value']));
+	                if($parseResult !== null) {
+	                    if(array_key_exists('error', $parseResult)) {
+	                        $fixFailures[] = $parseResult;
+	                    } else {
+	                        $dirty['parseResult'] = $parseResult;
+	                    }
+	                }
+	            }
 	        } 
 	        else {
-	            //TODO: use dirty[name] in concatenation to form method to
-	            // call reflectively on relevant handler's format-model; pass in
-	            // refs to the dirty and to fixFailures
+	            
+
+	            $method = null;
+	            $cellName = $dirty['name'];
+	            
+	            try {
+	                $method = new ReflectionMethod($formatModel, self::METHOD_PREFIX_COMPOUND . $cellName);
+	            } catch(Exception $e) {
+	                try {
+	                    $method = new ReflectionMethod($formatModel, self::METHOD_PREFIX_COMPLEX . $cellName);
+	                } catch(Exception $ex) {
+	                    Yii::log("couldn't find compound or complex handler-method: " . $cellName, 'info', "");
+	                }
+	            }
+	            
+	            if($method) {
+	                // 'null' here is original-table model's instance
+	                $parseResult = $method->invokeArgs($formatModel, array(null, $dirty['value']));
+	                 
+	                if($parseResult !== null) {
+	                    if(array_key_exists('error', $parseResult)) {
+	                        $fixFailures[] = $parseResult;
+	                    } else {
+	                        $dirty['parseResult'] = $parseResult;
+	                    }
+	                }
+	            }
 	        }
 	        
 	        if(array_key_exists('parseResult', $dirty)) {
 	            $fixedDirtiesByFieldName[$dirty['name']] = $dirty;
 	        }
-	        
 	    }
 	    
-	    if(count($fixFailures) == 0) {
-	        
-	        //TODO: already have this (above)
-	        $dbModelName = $this->dbModelNameForFormat($importFormat);
-	        $dbModel = new $dbModelName();
+	    unset($dirty); // weirdness about references to array-elements in a foreach
+	    
+	    if(count($fixFailures) == 0) { // can't store row until ALL errors fixed
 	        
 	        foreach($rowData as $field) {
 	            
@@ -156,24 +174,26 @@ class UploadController extends Controller
 	            
 	            if($parseResult !== null) {
 	                foreach($parseResult as $field) {
-	                    $dbModel->setAttribute($field['name'], $field['value']);
+	                    $model->setAttribute($field['name'], $field['value']);
 	                }
 	            } else {
-	                $dbModel->setAttribute($field['name'], $field['value']);
+	                $model->setAttribute($field['name'], $field['value']);
 	            }
 	        }
 	        
+	        $model->unresolved_parse_errors_json = null; // helps indicate row fully validated
+	        
 	        Yii::log("saving dbModel: " . $dbModelName, 'info', "");
-	        if(!$dbModel->save()) {
-	            Yii::log("couldn't save " . $dbModel . ": " . $dbModel->getErrors(), 'error', "");
+	        if(!$model->save()) {
+	            Yii::log("couldn't save " . $model . ": " . $model->getErrors(), 'error', "");
 	            // TODO: tell user that update for this row failed (NOT NULL col-value not provided, etc.)
 	        }
 	        
-	        return null;
+	        return null; // be sure to check for this at call-site
 	        
 	    } else {
 	        Yii::log("fixFailures : " . count($fixFailures), 'error', "");
-	        return $fixFailures;
+	        return $result;
 	    }
 	}
 	
@@ -182,23 +202,24 @@ class UploadController extends Controller
 	    $fixFailures = $fixFailureResult['fixFailures'];
 	    $badRow = $fixFailureResult['model'];
 	    
-	    $badRowData = $badRow->data; // FIXME: needs JSON-decoding!
-	    
-	    //FIXME: JSON is to be model-specific; so, need to update only
-	    // the relevant model's fieldDescrs
-	    foreach($badRowData as $fieldDescr) {
-	        if(array_key_exists($fieldDescr['name'], $fixFailures)) {
-	            $fieldDescr['value'] = $fixFailures[$fieldDescr['name']];
-	        }
-	    }
-	    
-	    //TODO: re-encode as JSON; update model's unresolved_parse_errors_json field
-	    
-	    /*
-	    if(!$badRow->save()) {
-	        Yii::log("couldn't save badRow: " . $badRow->getErrors(), 'error', "");
-	    }
-	    */
+	    $badRowData = $badRow->data;
+	    $badRowData = CJSON::decode($badRowData, true);
+
+        foreach($badRowData as &$fieldDescr) {
+            if(array_key_exists($fieldDescr['name'], $fixFailures)) {
+                $fieldDescr['value'] = $fixFailures[$fieldDescr['name']];
+            }
+        }
+        
+        unset($fieldDescr);
+        
+        $badRowData = CJSON::encode($badRowData);
+        $badRow->unresolved_parse_errors_json = $badRowData;
+
+        if(!$badRow->save()) {
+            Yii::log("couldn't update badRow's unresolved_parse_errors_json: " . $badRowData . 
+                        "; " . $badRow->getErrors(), 'error', "");
+        }
 	    
 	    return $badRowData; // maybe instead access (at call-site) within $fixFailureResult?
 	}
@@ -206,6 +227,7 @@ class UploadController extends Controller
 	protected function doFormatFixUpdate($data) {
 	    
 	    $dirties = $data['dirties'];
+	    $badRowDatas = array();
 	    
 	    foreach($dirties as $modelName => $dirtiesForModel) {
 	        
@@ -215,7 +237,10 @@ class UploadController extends Controller
 	        $dirtiesById = $this->getDirtiesById($dirtiesForModel);
 	         
 	        //TODO: need to return same message-format if still some fixFailures
-	        $badRowDatas = array(); 
+
+	        if(!array_key_exists($modelName, $badRowDatas)) {
+	             $badRowDatas[$modelName] = array();
+	        }
 	         
 	        foreach($dirtiesById as $key => $val) {
 	            $dirtiesForId = $dirtiesById[$key];
@@ -223,7 +248,7 @@ class UploadController extends Controller
 	            $id = $idParts[1];
 	            $result = $this->doFormatFixesForRow($modelName, $id, $dirtiesForId);
 	            if($result !== null) {
-	                $badRowDatas[] = $this->updateBadRowDataWithFixFailures($result);
+	                $badRowDatas[$modelName][] = $this->updateBadRowDataWithFixFailures($result);
 	            }
 	        }
 	    }
@@ -254,7 +279,7 @@ class UploadController extends Controller
 	            break;
 	        }
 	        default: {
-	            Yii::log("unrecognized ajax-op: " . $op, 'error', "");
+	            Yii::log("unrecognized ajax-op: " . $data['op'], 'error', "");
 	            //TODO: return error-message
 	        }
 	    }

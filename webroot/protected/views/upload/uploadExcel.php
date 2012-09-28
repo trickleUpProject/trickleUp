@@ -175,7 +175,6 @@ $(document).ready( function() {
         $divClone.attr('id', $divCloneId);
         $divClone.css('display', 'block');
         
-        //$divClone.find("*[id]").andSelf().each(function() {
         $divClone.find("*[id]").each(function() {
                 $(this).attr('id',function(i,id) {
                     log("id: " + id);
@@ -218,12 +217,6 @@ $(document).ready( function() {
     } else {
 
         log("handling formatErrors");
-
-        // iterate over top-level keys, which would be table-names, each to be associated with an instance of DataTable?
-        // use JQuery-clone() to create any additional needed DataTable instances? (each needs own id, for JQuery-access);
-        // foreach such entry in formatErrors, always have each table's set of field-errors in an array, even if there's
-        // only one entry (e.g., for "report" -- i.e., values appearing only once in a given report); then, loadTable()
-        // for each such array, passing in table-name; maybe use table-name as value of 'id'
         
         for(var model in formatErrors) {
             loadTable(model, formatErrors[model]);
