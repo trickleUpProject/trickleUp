@@ -8,8 +8,9 @@ class UploadController extends Controller
     
     const ERROR_TYPE_MULTI_VAL = 'multiVal';
     
-    const METHOD_PREFIX_COMPOUND = 'compound_handle_';
-    const METHOD_PREFIX_COMPLEX = 'complex_handle_';
+    //FIXME: move these two into FormatModel
+    const METHOD_PREFIX_COMPOUND = 'compound_';
+    const METHOD_PREFIX_COMPLEX = 'complex_';
     
     private $excelFormatHandlers;
     
@@ -78,7 +79,7 @@ class UploadController extends Controller
 	    return $dirtiesById;
 	}
 	
-	protected function doFormatFixesForRow($modelName, $id, $dirtiesForRow) {
+	protected function doFormatFixesForRow($formatId, $modelName, $id, $dirtiesForRow) {
 	    
 	    $result = array();
 	    $fixFailures = array();
@@ -92,14 +93,13 @@ class UploadController extends Controller
 	    //FIXME: ensure model found
 	    
 	    $result['model'] =& $model;
-	    $importFormat = $model->import_format;
 	    
-	    $rowData = $model->data;
+	    $rowData = $model->unresolved_parse_errors_json;
 	    $rowData = CJSON::decode($rowData, true);
 	    
 	    $fixedDirtiesByFieldName = array();
 	    
-	    $formatHdlr = $this->excelFormatHandlers[$importFormat];
+	    $formatHdlr = $this->excelFormatHandlers[$formatId];
 	    $formatModel = $formatHdlr->getModel();
 	    
 	    // NOT associative! just array of dirty (each of which is array with keys: name, value, etc.)
@@ -183,7 +183,7 @@ class UploadController extends Controller
 	        
 	        $model->unresolved_parse_errors_json = null; // helps indicate row fully validated
 	        
-	        Yii::log("saving dbModel: " . $dbModelName, 'info', "");
+	        Yii::log("saving dbModel: " . $modelName, 'info', "");
 	        if(!$model->save()) {
 	            Yii::log("couldn't save " . $model . ": " . $model->getErrors(), 'error', "");
 	            // TODO: tell user that update for this row failed (NOT NULL col-value not provided, etc.)
@@ -227,6 +227,7 @@ class UploadController extends Controller
 	protected function doFormatFixUpdate($data) {
 	    
 	    $dirties = $data['dirties'];
+	    $formatId = $data['formatId'];
 	    $badRowDatas = array();
 	    
 	    foreach($dirties as $modelName => $dirtiesForModel) {
@@ -246,7 +247,7 @@ class UploadController extends Controller
 	            $dirtiesForId = $dirtiesById[$key];
 	            $idParts = explode("_", $key);
 	            $id = $idParts[1];
-	            $result = $this->doFormatFixesForRow($modelName, $id, $dirtiesForId);
+	            $result = $this->doFormatFixesForRow($formatId, $modelName, $id, $dirtiesForId);
 	            if($result !== null) {
 	                $badRowDatas[$modelName][] = $this->updateBadRowDataWithFixFailures($result);
 	            }

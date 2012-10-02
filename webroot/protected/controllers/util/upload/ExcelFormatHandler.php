@@ -6,4 +6,6 @@ abstract class ExcelFormatHandler {
     }
     
     abstract function import($objPHPExcel, $importConfig);
+    
+    abstract function getModel();
 }

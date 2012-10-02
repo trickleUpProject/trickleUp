@@ -62,7 +62,6 @@ $(document).ready( function() {
     
     <?php
     if(property_exists($model, 'formatErrors') && $model->formatErrors != null) {
-        print_r("//" . $model->formatErrors . "\n");
         echo "formatErrors = " . $model->formatErrors . ";\n";
         echo "hasFormatErrors = true;\n";
     } else {
@@ -71,7 +70,7 @@ $(document).ready( function() {
    ?>
 
    //TODO: need to set all cells "read-only" that are part of a key in the DB,
-   //  because you're not allowed to change them (in the DB); so, when errors therein
+   //  because you're not allowed to change them (in the DB); so, when errors therein,
    //  need to delete row and re-insert?
     
     function execRemote(url, callback, dataToPOST) {
@@ -123,13 +122,18 @@ $(document).ready( function() {
                 log("rowId: " + rowId);
                 rowId = rowId.split("_"); // has model as prefix
                 rowId = rowId[1];
+
+                // dataById (and formatCols, below) expected to have been loaded 
+                //  on page-load (or, eventually, on AJAX-load)
                 var rowData = dataById[myModel][rowId];
                 
                 var colName = formatCols[myModel][iColumnIndex];
+
                 log("colName: " + colName);
+                log("rowData[" + colName + "]['field']['value']: " + 
+                        (rowData[colName] ? rowData[colName]['field']['value'] : "undefined"));
                 
-                rowData[colName] = sNewValue;
-                log('rowData[' + colName + ']: ' + rowData[colName]);
+                rowData[colName]['field']['value'] = sNewValue;
                 
                 var key = rowId + "-" + colName;
 
@@ -140,7 +144,7 @@ $(document).ready( function() {
                 } else {
                     dirties[model][key] = {
                         "id": rowId,
-                        "colName": colName,
+                        "name": colName,
                         "value": sNewValue
                     };
                 }
@@ -158,12 +162,15 @@ $(document).ready( function() {
         var id = obj['id'];
         newTr.attr('id', model + "_" + id);
         newTr.attr('class', 'odd_gradeX');
-        
-        var field = obj['field'];
-        newTr.append($('<td>').text(field['value']));
 
         if(!formatErrorFieldNames[model]) formatErrorFieldNames[model] = {};
-        formatErrorFieldNames[model][field['name']] = field['name']; // shortcut to ensure no duplicates (per model)
+        
+        var fields = obj['fields'];
+        for(var fieldName in fields) {
+            var fieldData = fields[fieldName];
+            newTr.append($('<td>').text(fieldData['value']));
+            formatErrorFieldNames[model][fieldName] = fieldName; // shortcut to ensure no duplicates (per model)
+        }
 
         $("#" + model).find('tbody').append(newTr);
     }
@@ -206,22 +213,37 @@ $(document).ready( function() {
         for(var i = 0; i < data.length; i++) {
             var item = data[i];
             addTableRow(model, item);
-            dataById[model][item['id']] = item;
+            if(!dataById[model][item['id']]) {
+                dataById[model][item['id']] = {};
+            }
+            //dataById[model][item['id']][item['field']['name']] = item;
+            var fields = item['fields'];
+            for(var fieldName in fields) {
+                var fieldData = fields[fieldName];
+                dataById[model][item['id']][fieldName] = fieldData;
+            }
         }
         
         //initDataTable(model); // but needs to be called here in async (AJAX) case
     }
+
+    var currFormatId = null;
     
     if(!hasFormatErrors) {
+        // pull relevant data via AJAX; for use-case(s) not yet implemented
         //execRemote('/index.php?r=upload/ajaxReportData', loadTable);
     } else {
 
         log("handling formatErrors");
+
+        currFormatId = formatErrors['FORMAT_ID'];
         
         for(var model in formatErrors) {
+            if(model == 'FORMAT_ID') continue;
             loadTable(model, formatErrors[model]);
         }
 
+        // formatErrorFieldNames gets loaded within loadTable()
         for(var model in formatErrorFieldNames) {
 
             var errorFieldNames = formatErrorFieldNames[model];
@@ -263,6 +285,7 @@ $(document).ready( function() {
         log(dirties);
         var data = {
             op: "FORMAT_FIX",
+            formatId: currFormatId,
             dirties: dirties
         };
         execRemote('/index.php?r=upload/ajaxReportDataUpdate', handleReportDataUpdateResp, data);
@@ -312,7 +335,7 @@ $(document).ready( function() {
 
 <div id="container">
 
-    <!-- a 'prototype', cloned via JQuery as needed -->
+    <!-- a 'prototype', cloned via JQuery as needed during data-load (whether on page-load or on AJAX-load) -->
     <div id="demo" style="display: none; width: 800px; overflow: auto">
         <table cellpadding="0" cellspacing="0" border="0" class="display" style="width: 800px" id="example">
         	<thead><tr id="example_tblHeader"></tr></thead>

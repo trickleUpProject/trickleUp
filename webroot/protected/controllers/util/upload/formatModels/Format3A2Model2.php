@@ -16,7 +16,7 @@ class Format3A2Model2 extends FormatModel {
 
     public function __construct() {
         
-        $this->$simpleDescrForColName = array(
+        $this->simpleDescrForColName = array(
             "age_months" => array(
                                      FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE,
                                      FormatModel::CELL_DB_COL_NAME => 'age_months',
@@ -55,7 +55,7 @@ class Format3A2Model2 extends FormatModel {
                 FormatModel::HEADER_ROW => 4,
                 FormatModel::ROW_RANGE => array(5, 14),
                 FormatModel::ROW_HANDLERS => array(
-                    'r5' => $this->$simpleDescrForColName['age_months'],
+                    'r5' => $this->simpleDescrForColName['age_months'],
                     'r6' => array( // weight_kg
                                     FormatModel::CELL_TYPE => FormatModel::CELL_TYPE_SIMPLE,
                                     FormatModel::CELL_DB_COL_NAME => 'weight_kg',
@@ -223,7 +223,7 @@ class Format3A2Model2 extends FormatModel {
     
     public function compound_MisCarriageDateAndReason($status, $fieldVal) {
         if(!$fieldVal) return null;
-        $parts = explode("&", $fieldVal);
+        $parts = explode("|", $fieldVal);
         if(count($parts) < 2) {
             Yii::log("Cell Format-Error: couldn't parse MisCarriageDateAndReason: " . $fieldVal, 'error', "");
             return array('failed' => true, 'name' => 'MisCarriageDateAndReason', 'value' => $fieldVal);
