@@ -147,7 +147,7 @@ class UploadController extends Controller
 	                $parseResult = $method->invokeArgs($formatModel, array(null, $dirty['value']));
 	                 
 	                if($parseResult !== null) {
-	                    if(array_key_exists('error', $parseResult)) {
+	                    if(array_key_exists('failed', $parseResult) && $parseResult['failed'] === true) {
 	                        $fixFailures[] = $parseResult;
 	                    } else {
 	                        $dirty['parseResult'] = $parseResult;
@@ -165,17 +165,34 @@ class UploadController extends Controller
 	    
 	    if(count($fixFailures) == 0) { // can't store row until ALL errors fixed
 	        
-	        foreach($rowData as $field) {
+	        $rowFields = $rowData['fields'];
+	        
+	        foreach($rowFields as $fieldKey => $field) {
 	            
-	            $parseResult = null;
+	            $fixedDirty = null;
 	            if(array_key_exists($field['name'], $fixedDirtiesByFieldName)) {
-	                $parseResult = $fixedDirtiesByFieldName[$field['name']];
+	                $fixedDirty = $fixedDirtiesByFieldName[$field['name']];
 	            }
 	            
-	            if($parseResult !== null) {
-	                foreach($parseResult as $field) {
-	                    $model->setAttribute($field['name'], $field['value']);
+	            Yii::log("fixedDirty " . print_r($fixedDirty, true), 'info', "");
+	            
+	            if($fixedDirty !== null) {
+	                
+	                $parseResult = $fixedDirty['parseResult'];
+	                
+	                if(array_key_exists('failed', $parseResult) && 
+	                                ($parseResult['failed'] === false || $parseResult['failed'] === "false")) {
+	                    // complex
+	                    $model->setAttribute($parseResult['name'], $parseResult['value']);
+	                } else {
+	                    // compound
+	                    foreach($parseResult as $pfield) {
+	                        $model->setAttribute($pfield['name'], $pfield['value']);
+	                    }
 	                }
+	                
+	                //TODO: could also be simple
+	                
 	            } else {
 	                $model->setAttribute($field['name'], $field['value']);
 	            }
@@ -200,18 +217,25 @@ class UploadController extends Controller
 	protected function updateBadRowDataWithFixFailures($fixFailureResult) {
 	    
 	    $fixFailures = $fixFailureResult['fixFailures'];
+	    Yii::log("fixFailures: " . print_r($fixFailures, true), 'info', "");
+	    
 	    $badRow = $fixFailureResult['model'];
 	    
-	    $badRowData = $badRow->data;
+	    $badRowData = $badRow->unresolved_parse_errors_json;
 	    $badRowData = CJSON::decode($badRowData, true);
 
-        foreach($badRowData as &$fieldDescr) {
-            if(array_key_exists($fieldDescr['name'], $fixFailures)) {
-                $fieldDescr['value'] = $fixFailures[$fieldDescr['name']];
+	    Yii::log("badRowData: " . print_r($badRowData, true), 'info', "");
+	    
+	    $rowFields = &$badRowData['fields'];
+	    Yii::log("rowFields: " . print_r($rowFields, true), 'info', "");
+	    
+	    foreach($rowFields as $fieldKey => &$field) {
+            if(array_key_exists($field['name'], $fixFailures)) {
+                $field['value'] = $fixFailures[$field['name']];
             }
-        }
+	    }
         
-        unset($fieldDescr);
+        unset($field);
         
         $badRowData = CJSON::encode($badRowData);
         $badRow->unresolved_parse_errors_json = $badRowData;
@@ -237,18 +261,15 @@ class UploadController extends Controller
 	        //  fixes succeeding, not all required fixes have been provided (by the user)
 	        $dirtiesById = $this->getDirtiesById($dirtiesForModel);
 	         
-	        //TODO: need to return same message-format if still some fixFailures
-
-	        if(!array_key_exists($modelName, $badRowDatas)) {
-	             $badRowDatas[$modelName] = array();
-	        }
-	         
 	        foreach($dirtiesById as $key => $val) {
 	            $dirtiesForId = $dirtiesById[$key];
 	            $idParts = explode("_", $key);
 	            $id = $idParts[1];
 	            $result = $this->doFormatFixesForRow($formatId, $modelName, $id, $dirtiesForId);
 	            if($result !== null) {
+	                if(!array_key_exists($modelName, $badRowDatas)) {
+	                    $badRowDatas[$modelName] = array();
+	                }
 	                $badRowDatas[$modelName][] = $this->updateBadRowDataWithFixFailures($result);
 	            }
 	        }

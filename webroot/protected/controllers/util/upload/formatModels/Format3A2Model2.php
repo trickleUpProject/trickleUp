@@ -154,68 +154,102 @@ class Format3A2Model2 extends FormatModel {
     
     public function complex_ShedCondition($report, $str) {
         if(!$str) return null;
-        $errResult = array('failed' => true, 'name' => 'ShedCondition', 'value' => $str);
+        $result = array('failed' => true, 'name' => 'ShedCondition', 'value' => $str);
         try {
             // "Shed condition: ______ / 5"  // do I seriously have to translate a count of underscores into a number?
             $parts = explode(':', $str);
-            if(!$parts || count($parts) < 2) return $errResult;
+            if(!$parts || count($parts) < 2) return $result;
             $part = $parts[1];
             $parts = explode('/', $part);
-            if(!$parts || count($parts) < 2) return $errResult;
-            $result = trim($parts[0]);
-            $report->shed_condition = $result;
-            return null;
+            if(!$parts || count($parts) < 2) return $result;
+            $val = trim($parts[0]);
+            
+            if($report) {
+                $report->shed_condition = $val;
+                return null;
+            } else {
+                $result['failed'] = false;
+                $result['value'] = $val;
+                return $result;
+            }
         } 
         catch(Exception $e) {
-            return $errResult;
+            Yii::log("Cell Format-Error: couldn't parse ShedCondition: " . $str, 'error', "");
+            return $result;
         }
     }
     
     public function complex_MaintenanceCleanliness($report, $str) {
         if(!$str) return null;
-        $errResult = array('failed' => true, 'name' => 'MaintenanceCleanliness', 'value' => $str);
+        $result = array('failed' => true, 'name' => 'MaintenanceCleanliness', 'value' => $str);
         try {
             // "Maintenance & Cleanliness (Y/N):"
             $parts = explode(':', $str);
             if(!$parts || count($parts) < 2) return $errResult;
-            $result = trim($parts[1]);
-            $report->maintenance_cleanliness = $result;
-            return null;
+            $val = trim($parts[1]);
+            
+            if($report) {
+                $report->maintenance_cleanliness = $val;
+                return null;
+            } else {
+                $result['failed'] = false;
+                $result['value'] = $val;
+                return $result;
+            }
         } 
         catch(Exception $e) {
-            return $errResult;
+            Yii::log("Cell Format-Error: couldn't parse MaintenanceCleanliness: " . $str, 'error', "");
+            return $result;
         }
     }
     
     public function complex_KMn04Application($report, $str) {
         if(!$str) return null;
-        $errResult = array('failed' => true, 'name' => 'KMn04Application', 'value' => $str);
+        $result = array('failed' => true, 'name' => 'KMn04Application', 'value' => $str);
         try {
             // "KMnO4 appication before and after delivery (Y/N):"
             $parts = explode(':', $str);
-            if(!$parts || count($parts) < 2) return $errResult;
-            $result = trim($parts[1]);
-            $report->KMn04_application = $result;
-            return null;
+            if(!$parts || count($parts) < 2) return $result;
+            $val = trim($parts[1]);
+            
+            if($report) {
+                $report->KMn04_application = $val;
+                return null;
+            } else {
+                $result['failed'] = false;
+                $result['value'] = $val;
+                return $result;
+            }
         } 
         catch(Exception $e) {
-            return $errResult;
+            Yii::log("Cell Format-Error: couldn't parse KMn04Application: " . $str, 'error', "");
+            return $result;
         }
     }
     
     public function complex_SeparationIfPregnant($report, $str) {
         if(!$str) return null;
-        $errResult = array('failed' => true, 'name' => 'SeparationIfPregnant', 'value' => $str);
+        // here, we use method-name-related value for 'name', to enable finding this method again, if necessary
+        $result = array('failed' => true, 'name' => 'SeparationIfPregnant', 'value' => $str);
         try {
             // Separation of pregnant goat (Y/N / N.A.): N
             $parts = explode(':', $str);
-            if($parts || count($parts) < 2) return $errResult;
-            $result = trim($parts[1]);
-            $report->separation_if_pregnant = $result;
-            return null;
+            if(!$parts || count($parts) < 2) return $result;
+            $val = trim($parts[1]);
+            
+            if($report) {
+                $report->separation_if_pregnant = $val;
+                return null;
+            } else {
+                $result['failed'] = "false"; // seems to end up empty if not quoted (?)
+                $result['name'] = 'separation_if_pregnant'; // here, we prepare for setting this single field on the model
+                $result['value'] = $val;
+                return $result;
+            }
         } 
         catch(Exception $e) {
-            return $errResult;
+            Yii::log("Cell Format-Error: couldn't parse SeparationIfPregnant: " . $str, 'error', "");
+            return $result;
         }
     }
     

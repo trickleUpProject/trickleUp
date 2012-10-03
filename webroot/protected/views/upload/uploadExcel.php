@@ -108,6 +108,7 @@ $(document).ready( function() {
         $('#' + myModel).dataTable().makeEditable({
 
             sDom: 'T<"clear">lfrtip', // controls how nodes are injected for table-controls (?)
+            bSort : false,
             
             //sUpdateURL: "UpdateData.php",
             sUpdateURL: function(value, settings) {
@@ -130,17 +131,17 @@ $(document).ready( function() {
                 var colName = formatCols[myModel][iColumnIndex];
 
                 log("colName: " + colName);
-                log("rowData[" + colName + "]['field']['value']: " + 
-                        (rowData[colName] ? rowData[colName]['field']['value'] : "undefined"));
+                log("rowData[" + colName + "]['value']: " + 
+                        (rowData[colName] ? rowData[colName]['value'] : "undefined"));
                 
-                rowData[colName]['field']['value'] = sNewValue;
+                rowData[colName]['value'] = sNewValue;
                 
                 var key = rowId + "-" + colName;
 
                 if(!dirties[model]) dirties[model] = {};
                 
                 if(dirties[model][key]) {
-                    dirties[key].value = sNewValue;
+                    dirties[model][key]['value'] = sNewValue;
                 } else {
                     dirties[model][key] = {
                         "id": rowId,
