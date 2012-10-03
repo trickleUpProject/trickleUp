@@ -104,11 +104,16 @@ $(document).ready( function() {
     function initDataTable(model) {
 
         var myModel = model;
+
+        var table = $('#' + myModel).dataTable({
+            bSort : false
+        });
         
-        $('#' + myModel).dataTable().makeEditable({
+        table.makeEditable({
 
             sDom: 'T<"clear">lfrtip', // controls how nodes are injected for table-controls (?)
-            bSort : false,
+            //bSort : false,
+            //aaSorting: [],
             
             //sUpdateURL: "UpdateData.php",
             sUpdateURL: function(value, settings) {
