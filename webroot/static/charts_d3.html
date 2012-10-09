@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link href="../js/novus-nvd3-6da6dbc/src/nv.d3.css" rel="stylesheet" type="text/css">
+<style>
+
+body {
+  overflow-y:scroll;
+}
+
+text {
+  font: 12px sans-serif;
+}
+
+#chart svg {
+  height: 400px;
+}
+
+</style>
+<body>
+
+<div id="chart">
+  <svg></svg>
+</div>
+
+<script src="../js/novus-nvd3-6da6dbc/lib/d3.v2.js"></script>
+<script src="../js/novus-nvd3-6da6dbc/nv.d3.js"></script>
+<script src="../js/novus-nvd3-6da6dbc/src/models/discreteBarChart.js"></script>
+<script src="../js/novus-nvd3-6da6dbc/src/utils.js"></script>
+
+<script> 
+
+data = [
+     {
+       key: "Change in Livestock Count",
+       values: [
+         {
+           "label" : "Jan" ,
+           "value" : -3
+         } ,
+         {
+           "label" : "Feb" ,
+           "value" : 0
+         } ,
+         {
+           "label" : "Mar" ,
+           "value" : 5
+         } ,
+         {
+           "label" : "Apr" ,
+           "value" : -1
+         } ,
+         {
+           "label" : "May" ,
+           "value" : -1
+         } ,
+         {
+           "label" : "Jun" ,
+           "value" : 0
+         } ,
+         {
+           "label" : "Jul" ,
+           "value" : -2
+         } ,
+         {
+           "label" : "Aug" ,
+           "value" : 2
+         } ,
+         {
+           "label" : "Sep" ,
+           "value" : 0
+         } ,
+         {
+           "label" : "Oct" ,
+           "value" : 0
+         } ,
+         {
+           "label" : "Nov" ,
+           "value" : 0
+         } ,
+         {
+           "label" : "Dec" ,
+           "value" : 0
+         }
+       ]
+     }
+   ];
+
+nv.addGraph({
+   generate: function() {
+    var chart = nv.models.discreteBarChart()
+        .x(function(d) { return d.label })
+        .y(function(d) { return d.value })
+        .staggerLabels(false)
+        .tooltips(false)
+        .showValues(true)
+        
+    chart.yAxis.tickFormat(d3.format(',.0f'))
+    chart.yAxis.axisLabel("Change in Livestock Count");
+    
+    chart.discretebar.valueFormat(d3.format(',.0f'));
+
+    d3.select('#chart svg')
+        .datum(data)
+      .transition().duration(500)
+        .call(chart);
+
+    nv.utils.windowResize(chart.update);
+
+    return chart;
+  },
+  callback: function(graph) {
+      graph.discretebar.dispatch.on('elementClick', function(e) {
+          console.log("Bar Click", e);
+          console.log("need drill-down for: " + e.point.label + ": " + e.point.value);
+      });
+  }
+});
+
+</script>
