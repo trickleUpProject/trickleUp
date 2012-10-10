@@ -38,19 +38,19 @@ var barChart1_data = [
        key: "Change in Livestock Count",
        values: [
          {
-           "label" : "Jan" ,
+           "label" : "January" ,
            "value" : -3
          } ,
          {
-           "label" : "Feb" ,
+           "label" : "February" ,
            "value" : 0
          } ,
          {
-           "label" : "Mar" ,
+           "label" : "March" ,
            "value" : 5
          } ,
          {
-           "label" : "Apr" ,
+           "label" : "April" ,
            "value" : -1
          } ,
          {
@@ -58,31 +58,31 @@ var barChart1_data = [
            "value" : -1
          } ,
          {
-           "label" : "Jun" ,
+           "label" : "June" ,
            "value" : 0
          } ,
          {
-           "label" : "Jul" ,
+           "label" : "July" ,
            "value" : -2
          } ,
          {
-           "label" : "Aug" ,
+           "label" : "August" ,
            "value" : 2
          } ,
          {
-           "label" : "Sep" ,
+           "label" : "September" ,
            "value" : 0
          } ,
          {
-           "label" : "Oct" ,
+           "label" : "October" ,
            "value" : 0
          } ,
          {
-           "label" : "Nov" ,
+           "label" : "November" ,
            "value" : 0
          } ,
          {
-           "label" : "Dec" ,
+           "label" : "December" ,
            "value" : 0
          }
        ]
@@ -221,6 +221,12 @@ function createTuBarChart(conf) {
         id: conf.chartDivId,
         style: "height: 400px; width: 700px"
     });
+    $barChart.append($('<div>', {
+        id: conf.chartDivId + "_title",
+        text: conf.chartTitle,
+        style: "text-align: center"
+      })
+    );
     $('#charts').append($barChart);
     $('<div/>', {style: "height: 50px"}).insertAfter("#" + conf.chartDivId);
     
@@ -231,7 +237,7 @@ function createTuBarChart(conf) {
     //.attr("width", 700)
     //.attr("height", 400);
     
-    tuBarCharts[conf.charDivId] = new TuBarChart(conf);
+    tuBarCharts[conf.chartDivId] = new TuBarChart(conf);
 }
 
 function barChart1_barClick(e) {
@@ -240,8 +246,9 @@ function barChart1_barClick(e) {
     
     var config = {
             chartDivId: 'chart2',
+            chartTitle: e.point.label,
             yAxisLabel: 'Change in Livestock Count (for Month)',
-            data: barChart2_data, //TODO: fetch this via AJAX (but that for chart2)
+            data: barChart2_data, //TODO: fetch this via AJAX
             tickFormat: ',.0f',
             valueFormat: ',.0f',
             barClickCallback: barChart2_barClick
@@ -264,6 +271,7 @@ $(document).ready( function() {
     
     var config = {
             chartDivId: 'chart1',
+            chartTitle: 'Change in Livestock Count Year-To-Date',
             yAxisLabel: 'Change in Livestock Count',
             data: barChart1_data, //TODO: fetch this via AJAX
             tickFormat: ',.0f',
