@@ -1,4 +1,8 @@
 <!DOCTYPE html>
+
+<html>
+
+<head>
 <meta charset="utf-8">
 <link href="../js/novus-nvd3-6da6dbc/src/nv.d3.css" rel="stylesheet" type="text/css">
 <style>
@@ -11,16 +15,16 @@ text {
   font: 12px sans-serif;
 }
 
-#chart svg {
+/*
+#chart1 svg {
   height: 400px;
+  width: 700px
 }
+*/
 
 </style>
-<body>
 
-<div id="chart">
-  <svg></svg>
-</div>
+<script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
 
 <script src="../js/novus-nvd3-6da6dbc/lib/d3.v2.js"></script>
 <script src="../js/novus-nvd3-6da6dbc/nv.d3.js"></script>
@@ -29,7 +33,7 @@ text {
 
 <script> 
 
-data = [
+var barChart1_data = [
      {
        key: "Change in Livestock Count",
        values: [
@@ -85,6 +89,65 @@ data = [
      }
    ];
 
+
+var barChart2_data = [
+  {
+    key: "Change in Livestock Count (for Month)",
+    values: [
+      {
+        "label" : "LastName1" ,
+        "value" : -3
+      } ,
+      {
+        "label" : "LastName2" ,
+        "value" : 0
+      } ,
+      {
+        "label" : "LastName3" ,
+        "value" : 5
+      } ,
+      {
+        "label" : "LastName4" ,
+        "value" : -1
+      } ,
+      {
+        "label" : "LastName5" ,
+        "value" : -1
+      } ,
+      {
+        "label" : "LastName6" ,
+        "value" : 0
+      } ,
+      {
+        "label" : "LastName7" ,
+        "value" : -2
+      } ,
+      {
+        "label" : "LastName8" ,
+        "value" : 2
+      } ,
+      {
+        "label" : "LastName9" ,
+        "value" : 0
+      } ,
+      {
+        "label" : "LastName10" ,
+        "value" : 0
+      } ,
+      {
+        "label" : "LastName11" ,
+        "value" : 0
+      } ,
+      {
+        "label" : "LastName12" ,
+        "value" : 0
+      }
+    ]
+  }
+];
+
+
+/*
 nv.addGraph({
    generate: function() {
     var chart = nv.models.discreteBarChart()
@@ -101,7 +164,7 @@ nv.addGraph({
 
     d3.select('#chart svg')
         .datum(data)
-      .transition().duration(500)
+        .transition().duration(500)
         .call(chart);
 
     nv.utils.windowResize(chart.update);
@@ -115,5 +178,118 @@ nv.addGraph({
       });
   }
 });
+*/
+
+function TuBarChart(conf) {
+    
+    this.data = conf.data;
+    
+    nv.addGraph({
+        generate: function() {
+         var chart = nv.models.discreteBarChart()
+             .x(function(d) { return d.label })
+             .y(function(d) { return d.value })
+             .staggerLabels(true)
+             .tooltips(false)
+             .showValues(true)
+             
+         chart.yAxis.tickFormat(d3.format(conf.tickFormat))
+         chart.yAxis.axisLabel(conf.yAxisLabel);
+         
+         chart.discretebar.valueFormat(d3.format(conf.valueFormat));
+
+         d3.select('#' + conf.chartDivId + ' svg')
+             .datum(conf.data)
+             .transition().duration(500)
+             .call(chart);
+
+         nv.utils.windowResize(chart.update);
+
+         return chart;
+       },
+       callback: function(graph) {
+           graph.discretebar.dispatch.on('elementClick', conf.barClickCallback);
+       }
+     });
+}
+
+var tuBarCharts = {};
+
+function createTuBarChart(conf) {
+    
+    var $barChart = $('<div>', {
+        id: conf.chartDivId,
+        style: "height: 400px; width: 700px"
+    });
+    $('#charts').append($barChart);
+    $('<div/>', {style: "height: 50px"}).insertAfter("#" + conf.chartDivId);
+    
+    //$barChart.append($('<svg/>')); // this doesn't work; doesn't actually create an svg-element (wrong namespace)
+    //   see: http://alignedleft.com/tutorials/d3/making-a-bar-chart/
+    var svg = d3.select('#' + conf.chartDivId)
+    .append("svg")
+    //.attr("width", 700)
+    //.attr("height", 400);
+    
+    tuBarCharts[conf.charDivId] = new TuBarChart(conf);
+}
+
+function barChart1_barClick(e) {
+    console.log("Chart1 Bar-Click", e);
+    console.log("need drill-down for: " + e.point.label + ": " + e.point.value);
+    
+    var config = {
+            chartDivId: 'chart2',
+            yAxisLabel: 'Change in Livestock Count (for Month)',
+            data: barChart2_data, //TODO: fetch this via AJAX (but that for chart2)
+            tickFormat: ',.0f',
+            valueFormat: ',.0f',
+            barClickCallback: barChart2_barClick
+        };
+    console.log(config);
+    createTuBarChart(config);
+    
+    $('html, body').animate({
+        scrollTop: $(window).scrollTop() + 450 // FIXME: no bare literal here!
+    });
+}
+
+function barChart2_barClick(e) {
+    console.log("Chart2 Bar-Click", e);
+    console.log("need drill-down for: " + e.point.label + ": " + e.point.value);
+}
+
+
+$(document).ready( function() {
+    
+    var config = {
+            chartDivId: 'chart1',
+            yAxisLabel: 'Change in Livestock Count',
+            data: barChart1_data, //TODO: fetch this via AJAX
+            tickFormat: ',.0f',
+            valueFormat: ',.0f',
+            barClickCallback: barChart1_barClick
+        };
+    console.log(config);
+    createTuBarChart(config);
+});
 
 </script>
+
+</head>
+
+<body>
+
+<div id="charts">
+
+</div>
+
+<!-- 
+<div id="chart">
+  <svg></svg>
+</div>
+ -->
+
+</body>
+
+</html>
