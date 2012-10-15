@@ -17,31 +17,55 @@
     <h3>dc experiments (dimensional charting)</h3>
 </center>
 
-
-<div id="livestockByMonth-chart" >
-    <span>Livestock By Month</span>
-    Current filter: <span class="filter"></span>
-    <a class="reset" href="javascript:livestockByMonthChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+<div style="float:left">
+    <div id="livestockByMonth-chart" >
+        <span>Livestock By Month</span>
+        Current filter: <span class="filter"></span>
+        <a class="reset" href="javascript:livestockByMonthChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clear"></div>
+    </div>
+    
     <div class="clear"></div>
+    
+    <div id="livestockByBiz-chart" >
+        <span>Livestock By Biz</span>
+        <a class="reset" href="javascript:livestockByBizChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clear"></div>
+    </div>
 </div>
 
-<div class="clear"></div>
-
-<div id="livestockByBiz-chart" >
-    <span>Livestock By Biz</span>
-    <a class="reset" href="javascript:livestockByBizChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
-    <div class="clear"></div>
+<div style="float:left">
+    <div id="livestockType-chart" >
+        <span>Livestock Type</span>
+        <a class="reset" href="javascript:livestockTypeChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clear"></div>
+    </div>
+    <div>
+    <table class="dc-data-table">
+        <thead>
+        <tr class="header">
+            <td>Business ID</td>
+            <td>Livestock-Type</td>
+            <td>Month</td>
+        </tr>
+        </thead>
+    </table>
+</div>
 </div>
 
 
 <script type="text/javascript">
 
+function log(msg) {
+    if(console && console.log) {
+        console.log(msg);
+    }
+}
+
 var livestockByMonthChart = dc.barChart("#livestockByMonth-chart");
 var livestockByBizChart = dc.barChart("#livestockByBiz-chart");
+var livestockTypeChart = dc.pieChart("#livestockType-chart");
 
-/*
-var gainOrLossChart = dc.pieChart("#gain-loss-chart");
-*/
 
             var data = [
                 {
@@ -56,7 +80,7 @@ var gainOrLossChart = dc.pieChart("#gain-loss-chart");
                 },
                 {
                     bizId: 1, 
-                    livestockType: 'pig',
+                    livestockType: 'goat',
                     month: 2
                 },
                 {
@@ -71,7 +95,7 @@ var gainOrLossChart = dc.pieChart("#gain-loss-chart");
                 },
                 {
                     bizId: 2, 
-                    livestockType: 'pig',
+                    livestockType: 'sheep',
                     month: 3
                 },
                 {
@@ -91,6 +115,8 @@ var gainOrLossChart = dc.pieChart("#gain-loss-chart");
             
             var byMonthGroup = byMonth.group();
 
+            var months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
             livestockByMonthChart.width(420)
                 .height(180)
                 .margins({top: 10, right: 50, bottom: 30, left: 40})
@@ -104,8 +130,8 @@ var gainOrLossChart = dc.pieChart("#gain-loss-chart");
                 .renderHorizontalGridLines(true)
                 //.brushOn(false)
                 .xAxis()
-                .tickFormat(function(v) {
-                        return v;
+                .tickFormat(function(d, i) {
+                        return months[i];
                     });
             livestockByMonthChart.yAxis().tickFormat(function(v) {return v;});
             
@@ -140,7 +166,72 @@ var gainOrLossChart = dc.pieChart("#gain-loss-chart");
             livestockByBizChart.yAxis().tickFormat(function(v) {return v;});
             
             
+            
+            var livestockType = ndx.dimension(function(d) {
+                return d.livestockType;
+            });
+            var livestockTypeGroup = livestockType.group();
+            
+            var livestockColors = ['#ff0000', '#00ff00', '#0000ff'];
+            
+            livestockTypeChart.width(180)
+                .height(180)
+                .radius(80)
+                .dimension(livestockType)
+                .group(livestockTypeGroup)
+                .label(function(d) {
+                    return d.data.key;
+                });
+            
+            livestockTypeChart.getColor = function(d, i) {
+                return d3.rgb(livestockColors[i]);
+            }
+            
+            
+             dc.dataTable(".dc-data-table")
+                    .dimension(byBiz)
+                    .group(function(d) {
+                        //var format = d3.format("02d");
+                        return d.bizId;
+                    })
+                    .size(3)
+                    .columns([
+                function(d) {
+                    return d.bizId;
+                },
+                function(d) {
+                    return d.livestockType;
+                },
+                function(d) {
+                    return d.month;
+                }
+            ])
+            .sortBy(function(d) {
+                return d.dd;
+            })
+            .order(d3.ascending);
+     
+     
+            
             dc.renderAll();
+            
+            log(livestockByBizChart.svg());
+            
+            livestockByBizChart.svg().append("text")
+                .attr("class", "x label")
+                .attr("text-anchor", "end")
+                .attr("x", 220)
+                .attr("y", 180)
+                .text("Business Number");
+            
+            livestockByBizChart.svg().append("text")
+                .attr("class", "y label")
+                .attr("text-anchor", "end")
+                .attr("y", 5)
+                .attr("dy", ".75em")
+                .attr("x", -18)
+                .attr("transform", "rotate(-90)")
+                .text("Livestock Count");
 
 </script>
 
