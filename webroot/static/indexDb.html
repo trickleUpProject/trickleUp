@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>IndexDB Experiments</title>
+
+<script src="/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+<script>
+
+indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB;
+
+$(document).ready(function() {
+
+    function log(m) {
+        if(console && console.log) {
+            console.log(m);
+        }
+    }
+    
+    var DB_NAME_PP = "ppDB";
+    var DB_STORE_PP = "participants";
+    var DB_VER_PP = "2";
+    
+    var db;
+    var nextId;
+    
+    function initDB(dbName) {
+        
+        var request = indexedDB.open(dbName, DB_VER_PP);
+        
+        request.onerror = function(event) {
+          log("initDB failed: " + dbName);
+          log(event);
+        };
+        
+        request.onsuccess = function(event) {
+          db = request.result;
+          // Generic error handler for all errors targeted at this database's requests
+          db.onerror = function(event) {
+              log(event);
+          };
+          log("db [" + dbName + "] initialized");
+        };
+        
+        // called very first time, and if new version requested (for changing the structure of it)
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+           
+            // Create an objectStore to hold information about our participants.
+            var objectStore = db.createObjectStore(DB_STORE_PP, { keyPath: "id" });
+           
+            // Create an index to search participants by name.
+            objectStore.createIndex("lastName", "lastName", { unique: false });
+           
+            // Create an index to search customers by email.
+            //objectStore.createIndex("email", "email", { unique: true });
+           
+            /*
+            // Store values in the newly created objectStore.
+            for (var i in customerData) {
+              objectStore.add(customerData[i]);
+            }
+            */
+        };
+    }
+    
+    
+    function initNextId() {
+        //TODO: need to either store last used ID, or, if missing, seek such as greatest of those already stored;
+        // so, need "data-store" (like a table: e.g. "lastPPId") with one key: "id"
+        nextId = 0;
+    }
+    
+    function getNextId() {
+        return ++nextId;
+    }
+    
+    function storeParticipant(pp) {
+        
+        log("storing pp:");
+        pp.id = getNextId();
+        log(pp);
+        
+        var transaction = db.transaction([DB_STORE_PP], IDBTransaction.READ_WRITE);
+        
+        transaction.oncomplete = function(event) {
+          log("storeParticipant-tx complete for pp.id: " + pp.id);
+          log(event);
+        };
+         
+        transaction.onerror = function(event) {
+          log(event);
+        };
+         
+        var objectStore = transaction.objectStore(DB_STORE_PP);
+        
+        //for (var i in customerData) {
+          var request = objectStore.add(pp);
+          request.onsuccess = function(event) {
+            // event.target.result == customerData[i].ssn
+            log(event);
+          };
+        //}
+    }
+    
+    function getPPData() {
+        var pp = {};
+        $('tr[id="ppData"]').each(function(){
+            $(this).find('input').each(function(){
+                var name = $(this).attr('id');
+                var val  = $(this).val();
+                pp[name] = val;
+            });
+        });
+        log("ppData:");
+        log(pp);
+        return pp;
+    }
+    
+    $('#addParticipant').click(function() {
+        var ppData = getPPData();
+        storeParticipant(ppData);
+        return false;
+    });
+    
+    $('#searchParticipants').click(function() {
+        
+        var filter = getPPData(); // BEWARE: this lacks id!
+        
+        var objectStore = db.transaction(DB_STORE_PP).objectStore(DB_STORE_PP);
+        
+        objectStore.openCursor().onsuccess = function(event) {
+          var cursor = event.target.result;
+          if (cursor) {
+            log("lastName for id " + cursor.key + " is " + cursor.value.lastName);
+            cursor.continue();
+          }
+          else {
+            log("No more entries in store: " + DB_STORE_PP);
+          }
+        };
+        
+        return false;
+    });
+    
+    $('#clearFilter').click(function() {
+        $('tr[id="ppData"]').each(function(){
+            $(this).find('input').each(function(){
+                $(this).val('');
+            });
+        });
+        return false;
+    });
+    
+    initNextId();
+    initDB(DB_NAME_PP);
+});
+
+</script>
+
+</head>
+<body>
+<font face=arial>
+<center>
+    <h3>IndexDB Experiments</h3>
+</center>
+
+<form>
+<b>Participant Data:</b>
+    <table id=participantTable border=1 cellpadding=0 cellspacing=0>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th style="background-color:#00FF00">Last Name</th>
+                <th>Field-Worker First Name</th>
+                <th style="background-color:#00FF00">Field-Worker Last Name</th>
+                <th>Last Field-Worker Visit</th>
+                <th>Health-Worker First Name</th>
+                <th style="background-color:#00FF00">Health-Worker Last Name</th>
+                <th>Last Health-Worker Visit</th>
+            </tr>
+            <tr id=ppData>
+                <td>&nbsp;</td>
+                <td align=center>
+                    <input id="firstName" size=20 width=20/>
+                </td>
+                <td align=center>
+                    <input id="lastName" size=20 width=20/>
+                </td>
+                <td align=center>
+                    <input id="fieldWorkerFirstName" size=20 width=20/>
+                </td>
+                <td align=center>
+                    <input id="fieldWorkerLastName" size=20 width=20/>
+                </td>
+                <td align=center>
+                    <input id="lastFieldWorkerVisit" size=20 width=20/>
+                </td>
+                <td align=center>
+                    <input id="healthWorkerFirstName" size=20 width=20/>
+                </td>
+                <td align=center>
+                    <input id="healthWorkerLastName" size=20 width=20/>
+                </td>
+                <td align=center>
+                    <input id="lastHealthWorkerVisit" size=20 width=20/>
+                </td>
+            </tr>
+            <tr>
+                <td colspan=9>
+                    <table>
+                        <tr><td height=10>&nbsp;</td></tr>
+                        <tr>
+                            <td valign=top>
+                                <button id="addParticipant">Add Participant</button>
+                            </td>
+                            <td valign=top>
+                                <button id="searchParticipants">Search Participants</button><br/>
+                                (To search, use the fields above to define a query-filter.)
+                            </td>
+                            <td valign=top>
+                                <button id="clearFilter">Clear Filter Data</button>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td colspan=9>&nbsp;</td>
+            </tr>
+        </thead>
+        <tbody>
+            
+        </tbody>
+    </table>
+</form>
+</font>
+</body>
+</html>
