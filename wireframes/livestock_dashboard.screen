@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
-  <widgets xsi:type="model:Image" id="1" x="80" y="48" measuredWidth="205" measuredHeight="142" src="../assets/barchart-wireframe-item.png"/>
-  <widgets xsi:type="model:Image" id="2" x="80" y="280" measuredWidth="205" measuredHeight="142" src="../assets/barchart-wireframe-item.png"/>
-  <widgets xsi:type="model:Chart" id="3" x="480" y="54" width="145" height="129" measuredWidth="145" measuredHeight="129"/>
-  <widgets xsi:type="model:Label" id="5" x="104" y="26" text="Livestock Count by Month" measuredWidth="157" measuredHeight="23">
+  <widgets xsi:type="model:Image" id="1" x="82" y="137" measuredWidth="205" measuredHeight="142" src="../assets/barchart-wireframe-item.png"/>
+  <widgets xsi:type="model:Image" id="2" x="80" y="355" measuredWidth="205" measuredHeight="142" src="../assets/barchart-wireframe-item.png"/>
+  <widgets xsi:type="model:Chart" id="3" x="455" y="146" width="145" height="129" measuredWidth="145" measuredHeight="129"/>
+  <widgets xsi:type="model:Label" id="5" x="105" y="107" text="Livestock Count by Month" measuredWidth="157" measuredHeight="23">
     <font/>
   </widgets>
-  <widgets xsi:type="model:Label" id="6" x="64" y="258" text="Livestock Count by Business For {Month}" measuredWidth="241" measuredHeight="23">
+  <widgets xsi:type="model:Label" id="6" x="75" y="333" text="Livestock Count by Business For {Month}" measuredWidth="241" measuredHeight="23">
     <font/>
   </widgets>
-  <widgets xsi:type="model:Table" id="7" x="376" y="258" text="Name,Last\nName,=. Age v,(w:30). Kids,Likes,(align:center). Actions&#xA;Peter,Severin,35,[x],{computer},[Edit] [View]&#xA;Henri,Severin,5,[],{train},[Edit] [View]&#xA;Olga,Severin,60,[x],{note},[Edit] [View]&#xA;[-] You can even&#xA;  [+] Make a&#xA;  [+] Tree table" measuredWidth="351" measuredHeight="172" alternative="#eeeeee">
+  <widgets xsi:type="model:Table" id="7" x="337" y="325" width="401" text="Business,Month,LivestockType,Purchase,Sale,Birth,Death&#xA;biz1,Mar,pig,{calendar},{calendar},{calendar},{calendar}&#xA;biz1,Mar,pig,{calendar},{calendar},{calendar},{calendar}&#xA;biz2,Mar,sheep,{calendar},{calendar},{calendar},{calendar}&#xA;biz2,Mar,sheep,{calendar},{calendar},{calendar},{calendar}&#xA;biz3,Mar,goat,{calendar},{calendar},{calendar},{calendar}&#xA;biz3,Mar,goat,{calendar},{calendar},{calendar},{calendar}&#xA;biz3,Mar,goat,{calendar},{calendar},{calendar},{calendar}&#xA;" measuredWidth="401" measuredHeight="179" alternative="#eeeeee">
     <font/>
   </widgets>
-  <widgets xsi:type="model:Label" id="8" x="432" y="224" text="Business Livestock Status for {Month}" measuredWidth="222" measuredHeight="23">
+  <widgets xsi:type="model:Label" id="8" x="423" y="299" text="Business Livestock Status for {Month}" measuredWidth="222" measuredHeight="23">
     <font/>
   </widgets>
-  <widgets xsi:type="model:Label" id="9" x="504" y="26" text="Livestock Type" measuredWidth="91" measuredHeight="23">
+  <widgets xsi:type="model:Label" id="9" x="483" y="109" text="Livestock Type" measuredWidth="91" measuredHeight="23">
     <font/>
   </widgets>
+  <widgets xsi:type="model:Image" id="12" x="105" y="8" measuredWidth="626" measuredHeight="77" src="../assets/trickleup-header.png"/>
   <hRuler/>
   <vRuler/>
   <font size="12px"/>

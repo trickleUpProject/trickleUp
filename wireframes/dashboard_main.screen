@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
+  <widgets xsi:type="model:Link" id="1" x="120" y="168" text="livestock" measuredWidth="54" measuredHeight="23" link="livestock_dashboard.screen">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Image" id="2" x="88" y="8" measuredWidth="626" measuredHeight="77" src="../assets/trickleup-header.png"/>
+  <widgets xsi:type="model:TabbedPane" id="4" x="88" y="84" width="626" height="445" text="Home,Import,Dashboards" measuredWidth="626" measuredHeight="445" selection="2" alpha="64">
+    <items x="10" y="0" width="55" height="27" text="Home"/>
+    <items x="65" y="0" width="59" height="27" text="Import"/>
+    <items x="124" y="0" width="90" height="27" text="Dashboards"/>
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:TabbedPane" id="5" x="294" y="85" width="179" height="27" text="More?,More?,More?" measuredWidth="179" measuredHeight="27" selection="">
+    <items x="10" y="0" width="55" height="27" text="More?"/>
+    <items x="65" y="0" width="55" height="27" text="More?"/>
+    <items x="120" y="0" width="55" height="27" text="More?"/>
+    <font/>
+  </widgets>
+  <hRuler/>
+  <vRuler/>
+  <font size="12px"/>
+</model:Screen>
