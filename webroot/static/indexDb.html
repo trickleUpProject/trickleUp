@@ -19,8 +19,9 @@ $(document).ready(function() {
     
     var DB_NAME_PP = "ppDB";
     var DB_STORE_PP = "participants";
-    var DB_VER_PP = "2";
+    var DB_VER_PP = "4";
     
+    var colNames;
     var db;
     var nextId;
     
@@ -45,22 +46,19 @@ $(document).ready(function() {
         // called very first time, and if new version requested (for changing the structure of it)
         request.onupgradeneeded = function(event) {
             db = event.target.result;
-           
-            // Create an objectStore to hold information about our participants.
-            var objectStore = db.createObjectStore(DB_STORE_PP, { keyPath: "id" });
-           
-            // Create an index to search participants by name.
-            objectStore.createIndex("lastName", "lastName", { unique: false });
-           
-            // Create an index to search customers by email.
-            //objectStore.createIndex("email", "email", { unique: true });
-           
-            /*
-            // Store values in the newly created objectStore.
-            for (var i in customerData) {
-              objectStore.add(customerData[i]);
+            var objectStore = null;
+            
+            try {
+                objectStore = db.createObjectStore(DB_STORE_PP, { keyPath: "id"});
+            } catch(err) {
+                log(err);
+                db.deleteObjectStore(DB_STORE_PP);
             }
-            */
+            
+            objectStore = db.createObjectStore(DB_STORE_PP, { keyPath: "id", autoIncrement: true });
+           
+            objectStore.createIndex("lastName", "lastName", { unique: false });
+            objectStore.createIndex("fieldWorkerLastName", "fieldWorkerLastName", { unique: false });
         };
     }
     
@@ -78,13 +76,14 @@ $(document).ready(function() {
     function storeParticipant(pp) {
         
         log("storing pp:");
-        pp.id = getNextId();
+        //pp.id = getNextId(); // now using autoIncrement
+        
         log(pp);
         
         var transaction = db.transaction([DB_STORE_PP], IDBTransaction.READ_WRITE);
         
         transaction.oncomplete = function(event) {
-          log("storeParticipant-tx complete for pp.id: " + pp.id);
+          log("storeParticipant-tx complete for pp.lastName: " + pp.lastName);
           log(event);
         };
          
@@ -94,13 +93,12 @@ $(document).ready(function() {
          
         var objectStore = transaction.objectStore(DB_STORE_PP);
         
-        //for (var i in customerData) {
-          var request = objectStore.add(pp);
-          request.onsuccess = function(event) {
-            // event.target.result == customerData[i].ssn
-            log(event);
-          };
-        //}
+        var request = objectStore.add(pp);
+        request.onsuccess = function(event) {
+          // event.target.result == customerData[i].ssn
+          log(event);
+          $('#searchParticipants').click();
+        };
     }
     
     function getPPData() {
@@ -123,21 +121,50 @@ $(document).ready(function() {
         return false;
     });
     
+    function addColToRow(colData, row) {
+        row.append($('<td>', {text: colData}));
+    }
+    
     $('#searchParticipants').click(function() {
         
         var filter = getPPData(); // BEWARE: this lacks id!
         
-        var objectStore = db.transaction(DB_STORE_PP).objectStore(DB_STORE_PP);
+        var cursorFactory = db.transaction(DB_STORE_PP).objectStore(DB_STORE_PP);
         
-        objectStore.openCursor().onsuccess = function(event) {
+        if(filter.fieldWorkerLastName) {
+            log("using index fieldWorkerLastName for value: " + filter.fieldWorkerLastName);
+            cursorFactory = cursorFactory.index('fieldWorkerLastName');
+        }
+        
+        var $tBody = $('#participantTable > tbody');
+        $tBody.empty();
+        
+        cursorFactory.openCursor().onsuccess = function(event) {
+          
           var cursor = event.target.result;
-          if (cursor) {
-            log("lastName for id " + cursor.key + " is " + cursor.value.lastName);
+          
+          // if there's a filter-field, apply it (don't render row for rows without matching filter-field-value)
+          //     && (!filter.fieldWorkerLastName || cursor.key == filter.fieldWorkerLastName)
+          if(cursor /*&& (!filter.fieldWorkerLastName || cursor.key == filter.fieldWorkerLastName)*/) {
+            
+            if(!filter.fieldWorkerLastName || cursor.key == filter.fieldWorkerLastName) {
+                log("filter.fieldWorkerLastName: " + filter.fieldWorkerLastName + ": " + (!filter.fieldWorkerLastName || cursor.key == filter.fieldWorkerLastName));
+                log("lastName for id (or index-field) " + cursor.key + " is " + cursor.value.lastName);
+                
+                var row = $('<tr>', {id: cursor.key});
+                addColToRow("", row); // where id would otherwise be
+                for(var i in colNames) {
+                    addColToRow(cursor.value[colNames[i]], row);
+                }
+                row.prependTo($tBody);
+            }
+            
             cursor.continue();
           }
           else {
             log("No more entries in store: " + DB_STORE_PP);
           }
+          
         };
         
         return false;
@@ -152,6 +179,16 @@ $(document).ready(function() {
         return false;
     });
     
+    function initColNamesArray() {
+        colNames = [];
+        $('tr[id="ppData"]').each(function(){
+            $(this).find('input').each(function(){
+                colNames.push($(this).attr('id'));
+            });
+        });
+    }
+    
+    initColNamesArray();
     initNextId();
     initDB(DB_NAME_PP);
 });
