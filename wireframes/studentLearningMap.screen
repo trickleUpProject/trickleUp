@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model:Screen xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:model="http://wireframesketcher.com/1.0/model.ecore">
+  <widgets xsi:type="model:Panel" id="3" x="101" y="96" width="689" height="217" measuredWidth="689" measuredHeight="217"/>
+  <widgets xsi:type="model:Circle" id="4" x="192" y="232" width="66" height="57" measuredWidth="66" measuredHeight="57" background="#ff0000" foreground="#ff0000">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Circle" id="5" x="248" y="144" width="66" height="57" measuredWidth="66" measuredHeight="57" background="#00ff00" foreground="#00ff00">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Circle" id="6" x="304" y="136" width="66" height="57" measuredWidth="66" measuredHeight="57" background="#00ff00" foreground="#00ff00">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Circle" id="7" x="336" y="208" width="89" height="89" measuredWidth="89" measuredHeight="89" background="#ff0000" foreground="#ff0000">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Circle" id="8" x="392" y="247" width="74" height="65" measuredWidth="74" measuredHeight="65">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Circle" id="9" x="448" y="255" width="66" height="57" measuredWidth="66" measuredHeight="57">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Circle" id="10" x="513" y="272" width="41" height="41" measuredWidth="41" measuredHeight="41">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Note" id="13" x="101" y="2" width="692" height="89" text="assignment-scores and completion (for a given student, and/or aggregated across all of a given teacher's students): &#xA;greenness of circles indicates correctness of completed assignments;&#xA;redness indicates below-threshold correctness of completed assignments;&#xA;white indicates incomplete assignments;&#xA;radius of circle indicates time since assignment assigned, or, if complete, time spent on assignment" measuredWidth="692" measuredHeight="89" annotation="true" textAlignment="Left">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Note" id="14" x="101" y="367" width="689" height="81" text="elswhere on page, a pie-chart shows all relevant Core Curriculum topics(?) (relevant to any of the graphed assignments; a click on a slice therein sets filter for that topic" measuredWidth="689" measuredHeight="81" annotation="true" textAlignment="Left">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="15" x="119" y="320" width="671" text="Jan        Feb        Mar        Apr        May        Jun        Jul        Aug        Sep        Oct        Nov        Dec" measuredWidth="671" measuredHeight="23">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="16" x="72" y="249" text="50" measuredWidth="21" measuredHeight="23">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="17" x="72" y="225" text="60" measuredWidth="21" measuredHeight="23">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="18" x="72" y="200" text="70" measuredWidth="21" measuredHeight="23">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="19" x="72" y="177" text="80" measuredWidth="21" measuredHeight="23">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="20" x="72" y="153" text="90" measuredWidth="21" measuredHeight="23">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="21" x="66" y="129" text="100" measuredWidth="28" measuredHeight="23">
+    <font/>
+  </widgets>
+  <widgets xsi:type="model:Label" id="22" x="72" y="272" text="40" measuredWidth="21" measuredHeight="23">
+    <font/>
+  </widgets>
+  <hRuler/>
+  <vRuler/>
+  <font size="12px"/>
+</model:Screen>

@@ -1,0 +1,335 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>dc experiments - dimensional charting</title>
+
+    <script type="text/javascript" src="../js/mbostock-d3-44e4620/d3.v2.js"></script>
+    <script type="text/javascript" src="../js/square-crossfilter-0a7bf20/crossfilter.js"></script>
+    <script type="text/javascript" src="../js/NickQiZhu-dc.js-ce8bc87/dc.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="../js/NickQiZhu-dc.js-ce8bc87/test/dc.css"/>
+
+</head>
+<body>
+
+<center>
+    <h3><font face=arial><u>Student Learning Map</u></font></h3>
+</center>
+
+<div style="float:left">
+<!-- 
+    <div id="livestockByMonth-chart" >
+        <span>Livestock By Month</span>
+        Current filter: <span class="filter"></span>
+        <a class="reset" href="javascript:livestockByMonthChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clear"></div>
+    </div>
+    
+    <div class="clear"></div>
+    
+    <div id="livestockByBiz-chart" >
+        <span>Livestock By Biz</span>
+        <a class="reset" href="javascript:livestockByBizChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clear"></div>
+    </div>
+    
+    <div class="clear"></div>
+ -->
+ 
+    <div id="bubble-chart"  style="float:left">
+        <span><font face=arial><b>Assignments for {studentFirstName} {studentLastName}</b></font></span>
+        <a class="reset" href="javascript:bubbleChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clear"></div>
+    </div>
+    
+    <div id="pie-chart"  style="float:left">
+        <span>Topics</span>
+        <a class="reset" href="javascript:pieChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clear"></div>
+    </div>
+    
+</div>
+
+    <!-- 
+<div style="float:left">
+    <div id="livestockType-chart" >
+        <span>Livestock Type</span>
+        <a class="reset" href="javascript:livestockTypeChart.filterAll();dc.redrawAll();" style="display: none;">reset</a>
+        <div class="clear"></div>
+    </div>
+    <div>
+        <table class="dc-data-table">
+            <thead>
+            <tr class="header">
+                <td>Business ID</td>
+                <td>Livestock-Type</td>
+                <td>Month</td>
+            </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+     -->
+
+<script type="text/javascript">
+
+function log(msg) {
+    if(console && console.log) {
+        console.log(msg);
+    }
+}
+
+/*
+var livestockByMonthChart = dc.barChart("#livestockByMonth-chart");
+var livestockByBizChart = dc.barChart("#livestockByBiz-chart");
+var livestockTypeChart = dc.pieChart("#livestockType-chart");
+*/
+            
+            var data = [
+                {id: 1, topic: 'History', description: "watch episode #3 of Ken Burns' 'Civil War' and write a 500-word essay about the Gettysburg Address", monthAssigned: "2011-01-01", grade: 60, daysSinceAssigned: 5},
+                {id: 2, topic: 'History', description: "read chapter 3 of book {theBook} about Frederick Douglas and answer the online quiz-questions about it", monthAssigned: "2011-02-01", grade: 70, daysSinceAssigned: 10},
+                {id: 3, topic: 'History', description: "select 5 Mathew Brady Civil War photos and write a poem about them", monthAssigned: "2011-03-01", grade: 80, daysSinceAssigned: 15},
+                {id: 4, topic: 'Mathematics', description: "do exercises 10 - 15 on logarithms", monthAssigned: "2011-04-01", grade: 60, daysSinceAssigned: 20},
+                {id: 5, topic: 'Science', description: "read chapter 6 of book {theBook} about the solar system and answer the online quiz about it", monthAssigned: "2011-05-01", grade: 65, daysSinceAssigned: 25},
+                {id: 6, topic: 'Science/Lab', description: "do the online lab-exercises about the solar system", monthAssigned: "2011-06-01", grade: 70, daysSinceAssigned: 30},
+                {id: 7, topic: 'Literature', description: "write a poem inspired by 'The Love Song of J. Alfred Prufrock", monthAssigned: "2011-07-01", grade: 85, daysSinceAssigned: 30},
+                {id: 8, topic: 'Literature', description: "choose a poem by Langston Hughes and write a 500-word essay about it", monthAssigned: "2011-08-01", grade: 80, daysSinceAssigned: 55},
+                {id: 9, topic: 'Literature', description: "write a poem of your own in iambic pentameter", monthAssigned: "2011-09-01", grade: 75, daysSinceAssigned: 70},
+                {id: 10, topic: 'Theater/Music', description: "make a YouTube video of yourself rapping a Shakespeare sonnet", monthAssigned: "2011-10-01", grade: 90, daysSinceAssigned: 55}
+            ];
+            
+            // feed it through crossfilter
+            var ndx = crossfilter(data);
+            var all = ndx.groupAll();
+            
+            var byAssignId = ndx.dimension(function(d) {
+                return d.id;
+            });
+            var byAssignIdGroup = byAssignId.group();
+            var byAssignIdMultiGroup = byAssignIdGroup.reduce(
+                    //add
+                    function(p, v) {
+                        p.id = v.id;
+                        p.topic = v.topic;
+                        p.monthAssigned = v.monthAssigned;
+                        p.grade = v.grade;
+                        p.daysSinceAssigned = v.daysSinceAssigned;
+                        p.description = v.description;
+                        return p;
+                    },
+                    //remove
+                    function(p, v) {
+                        //--p.count;
+                        //p.value -= +v.value;
+                        //return p;
+                        return {id: v.id, topic: '', monthAssigned: '', grade: 0, daysSinceAssigned: 0, description: ''};
+                    },
+                    //init
+                    function() {
+                        return {id: 0, topic: '', monthAssigned: '', grade: 0, daysSinceAssigned: 0, description: ''};
+                    }
+                );
+            
+            var bubbleChart = dc.bubbleChart("#bubble-chart");
+            bubbleChart.width(990)
+                    .height(500)
+                    .dimension(byAssignId)
+                    //.group(byAssignIdGroup)
+                    .group(byAssignIdMultiGroup)
+                    .colors(["#ff0000", "#ff4040","#ff7373","#67ff67","#39ff39","#00ff00"])
+                    .colorDomain([50, 100])
+                    .colorAccessor(function(p) {
+                        log(p);
+                        return p.value.grade;
+                    })
+                    .keyAccessor(function(p) {
+                        var format = d3.time.format("%Y-%m-%d");
+                        return format.parse(p.value.monthAssigned); // returns a Date
+                    })
+                    .valueAccessor(function(p) {
+                        return p.value.grade;
+                    })
+                    .radiusValueAccessor(function(p) {
+                        return p.value.daysSinceAssigned;
+                    })
+                    .x(d3.time.scale().range([0,990]))
+                    .y(d3.scale.linear().domain([0, 100]))
+                    .r(d3.scale.linear().domain([0, 365]))
+                    .maxBubbleRelativeSize(0.3)
+                    .elasticY(true)
+                    .yAxisPadding(3)
+                    .elasticX(true)
+                    .xAxisPadding(20)
+                    .renderLabel(true)
+                    .label(function(p){
+                        return p.value.topic
+                    })
+                    .renderTitle(true)
+                    .title(function(p) {
+                        return "Description:\n" + p.value.description + "\n\nGrade:" + p.value.grade
+                    });
+            
+            
+            var pieChart = dc.pieChart("#pie-chart");
+            
+            var byTopic = ndx.dimension(function(d) {
+                return d.topic;
+            });
+            var byTopicGroup = byTopic.group();
+            
+            var topicColors = ['#cc0000', '#00cc00', '#0000cc', '#cccc00', '#00cccc', '#cc00cc'];
+            
+            pieChart.width(360)
+                .height(360)
+                .radius(160)
+                .dimension(byTopic)
+                .group(byTopicGroup)
+                .label(function(d) {
+                    return d.data.key;
+                });
+            
+            pieChart.getColor = function(d, i) {
+                return d3.rgb(topicColors[i]);
+            }
+            
+            pieChart.renderlet(function(chart){
+                chart.selectAll("g.pie-slice").on("click", function(d){
+                    bubbleChart.filter(d.key);
+                    dc.redrawAll(chart.chartGroup());
+                }) ;
+            });
+            
+            /*
+            var byMonth = ndx.dimension(function(d) {
+                return d.month;
+            });
+            
+            var byMonthGroup = byMonth.group();
+
+            var months = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            
+            livestockByMonthChart.width(420)
+                .height(180)
+                .margins({top: 10, right: 50, bottom: 30, left: 40})
+                .dimension(byMonth)
+                .group(byMonthGroup)
+                .elasticY(true)
+                .centerBar(true)
+                .gap(1)
+                .round(dc.round.floor)
+                .x(d3.scale.linear().domain([0, 12]))
+                .renderHorizontalGridLines(true)
+                //.brushOn(false)
+                .xAxis()
+                .tickFormat(function(d, i) {
+                        return months[i];
+                    });
+            livestockByMonthChart.yAxis().tickFormat(function(v) {return v;});
+            
+            livestockByMonthChart.renderlet(function(chart){
+                //chart.select("g.y").style("display", "none");
+                livestockByBizChart.filter(chart.filter());
+            });
+            
+            
+            var byBiz = ndx.dimension(function(d) {
+                return d.bizId;
+            });
+            
+            var byBizGroup = byBiz.group();
+
+            livestockByBizChart.width(420)
+                .height(180)
+                .margins({top: 10, right: 50, bottom: 30, left: 40})
+                .dimension(byBiz)
+                .group(byBizGroup)
+                .elasticY(true)
+                .centerBar(true)
+                .gap(1)
+                .round(dc.round.floor)
+                .x(d3.scale.linear().domain([0, 12]))
+                .renderHorizontalGridLines(true)
+                //.brushOn(false)
+                .xAxis()
+                .tickFormat(function(v) {
+                        return v;
+                    });
+            livestockByBizChart.yAxis().tickFormat(function(v) {return v;});
+            
+            
+            
+            var livestockType = ndx.dimension(function(d) {
+                return d.livestockType;
+            });
+            var livestockTypeGroup = livestockType.group();
+            
+            var livestockColors = ['#ff0000', '#00ff00', '#0000ff'];
+            
+            livestockTypeChart.width(180)
+                .height(180)
+                .radius(80)
+                .dimension(livestockType)
+                .group(livestockTypeGroup)
+                .label(function(d) {
+                    return d.data.key;
+                });
+            
+            livestockTypeChart.getColor = function(d, i) {
+                return d3.rgb(livestockColors[i]);
+            }
+            
+            
+             dc.dataTable(".dc-data-table")
+                    .dimension(byBiz)
+                    .group(function(d) {
+                        //var format = d3.format("02d");
+                        return d.bizId;
+                    })
+                    .size(3)
+                    .columns([
+                function(d) {
+                    return d.bizId;
+                },
+                function(d) {
+                    return d.livestockType;
+                },
+                function(d) {
+                    return d.month;
+                }
+            ])
+            .sortBy(function(d) {
+                return d.dd;
+            })
+            .order(d3.ascending);
+     
+             */
+
+            
+            dc.renderAll();
+            
+            
+            /*
+            log(livestockByBizChart.svg());
+            
+            livestockByBizChart.svg().append("text")
+                .attr("class", "x label")
+                .attr("text-anchor", "end")
+                .attr("x", 220)
+                .attr("y", 180)
+                .text("Business Number");
+            
+            livestockByBizChart.svg().append("text")
+                .attr("class", "y label")
+                .attr("text-anchor", "end")
+                .attr("y", 5)
+                .attr("dy", ".75em")
+                .attr("x", -18)
+                .attr("transform", "rotate(-90)")
+                .text("Livestock Count");
+            */
+
+</script>
+
+</body>
+</html>
