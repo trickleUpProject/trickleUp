@@ -27,8 +27,8 @@ svg {
 }
 
 #states circle {
-  fill: #fcc;
-  stroke: #000;
+  fill: #000000;
+  stroke: #0000000;
 }
 
 div {
@@ -39,28 +39,93 @@ div {
   </head>
   <body>
     <h3>Albers Projection</h3>
-    <script type="text/javascript">
-
+    <script type="text/javascript">    
+    
 // Our projection.
 var xy = d3.geo.albers(),
     path = d3.geo.path().projection(xy);
 
-d3.select("body")
+var svg = d3.select("body")
   .append("svg")
+  
+.call(d3.behavior.zoom()
+    .on("zoom", redraw))
+  
   .append("g")
     .attr("id", "states");
 
+function redraw() {
+    svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
+}
+
+
+var schools = [
+               {
+                   "dbn":"18K279",
+                   "name":"P.S. 279 Herman Schreiber ",
+                   "lat":"40.644134",
+                   "long":"-73.892797",
+                   "type":"Elementary",
+                   "enrollment":"812",
+                   "pi":"61.6838488",
+                   "overall":"36.20689655",
+                   "progress":"37.80068729",
+                   "performance":"58.59106529",
+                   "environment":"14.604811"
+               },
+               {
+                   "dbn":"18K276",
+                   "name":"P.S. 276 Louis Marshall ",
+                   "lat":"40.634005",
+                   "long":"-73.908436",
+                   "type":"Elementary",
+                   "enrollment":"928",
+                   "pi":"59.79381443",
+                   "overall":"35.34482759",
+                   "progress":"41.2371134",
+                   "performance":"42.26804124",
+                   "environment":"15.12027491"
+               }               
+];
+
 d3.json("../data/us-states.json", function(collection) {
+  
   d3.select("#states")
     .selectAll("path")
       .data(collection.features)
     .enter().append("path")
       .attr("d", path);
+  /*
   d3.select("#states")
     .append("circle")
       .attr("r", 10)
-      .attr("transform", "translate(" + xy(xy.origin()).join(",") + ")")
+      .attr("transform", "translate(" + xy(xy.origin()).join(",") + ")");
+  */
+  
+  d3.select("#states")
+  .selectAll("circle")
+  .data(schools)
+  .enter().append("circle")
+    .attr("r", .1)
+    .attr("cy", function(d) { return xy([d.long, d.lat])[1]; }) 
+    .attr("cx", function(d) { return xy([d.long, d.lat])[0]; });
+  
 });
+
+// extracted-from-new-york-2.json
+// format-errors:
+//  \\"  i.e., nested double-quotes within certain properties-values
+// \]\s*[, ]+\s*\]   <== because of missing geometry-elements, because of osmosis bounding-box settings
+//   e.g., "], , ,]"  i.e., empty nested arrays
+
+d3.json("../data/extracted-from-new-york-2.json", function(collection) {
+  d3.select("#states")
+    .selectAll("path")
+      .data(collection.features)
+    .enter().append("path")
+      .attr("d", path);
+});
+
 
 function refresh() {
   d3.selectAll("#states path")
