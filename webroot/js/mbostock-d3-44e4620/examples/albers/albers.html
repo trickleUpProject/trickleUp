@@ -42,8 +42,10 @@ div {
     <script type="text/javascript">    
     
 // Our projection.
-var xy = d3.geo.albers(),
-    path = d3.geo.path().projection(xy);
+var xy = d3.geo.albers();
+    xy.origin([-74.01, 40.713]);
+    xy.scale(2000000);
+var path = d3.geo.path().projection(xy);
 
 var svg = d3.select("body")
   .append("svg")
@@ -102,6 +104,7 @@ d3.json("../data/us-states.json", function(collection) {
       .attr("transform", "translate(" + xy(xy.origin()).join(",") + ")");
   */
   
+  /*
   d3.select("#states")
   .selectAll("circle")
   .data(schools)
@@ -109,21 +112,41 @@ d3.json("../data/us-states.json", function(collection) {
     .attr("r", .1)
     .attr("cy", function(d) { return xy([d.long, d.lat])[1]; }) 
     .attr("cx", function(d) { return xy([d.long, d.lat])[0]; });
+  */
   
 });
 
-// extracted-from-new-york-2.json
-// format-errors:
-//  \\"  i.e., nested double-quotes within certain properties-values
-// \]\s*[, ]+\s*\]   <== because of missing geometry-elements, because of osmosis bounding-box settings
-//   e.g., "], , ,]"  i.e., empty nested arrays
+// extracted-from-new-york-3.json
+// bzcat new-york.osm.bz2 | ./osmosis-0.41/bin/osmosis  --read-xml enableDateParsing=no file=-  --bounding-box top=40.7211 left=-74.0188 bottom=40.7011 right=-73.9976 --write-xml file=- | bzip2 > osmExtracteds/extracted-from-new-york-3.osm.bz2
+// new-york.osm downloaded from a site linked to from openstreetmaps.org
 
-d3.json("../data/extracted-from-new-york-2.json", function(collection) {
+// format-errors:
+//  \\\\", replace with: '  i.e., nested double-quotes within certain properties-values
+// /\](, ){2,}\]/g   <== because of missing geometry-elements, because of osmosis bounding-box settings
+//   replace with ]]
+// /\[(, ){2,}\[/g
+//   replace with [[
+// /\](, ){2,}\[/g
+//   replace with ],[
+// literal pattern:     ], ]}
+//  replace with: ]]}
+// literal pattern:     [, [
+//  replace with: [[
+
+d3.json("../data/extracted-from-new-york-3.json", function(collection) {
   d3.select("#states")
     .selectAll("path")
       .data(collection.features)
     .enter().append("path")
       .attr("d", path);
+  
+  d3.select("#states")
+  .selectAll("circle")
+  .data(schools)
+  .enter().append("circle")
+    .attr("r", 5)
+    .attr("cy", function(d) { return xy([-74.01, 40.713])[1]; }) 
+    .attr("cx", function(d) { return xy([-74.01, 40.713])[0]; });
 });
 
 
@@ -147,10 +170,10 @@ function refresh() {
 }
 
     </script><p>
-    <div id="lon">origin.longitude: <span>-98</span></div>
-    <div id="lat">origin.latitude: <span>38</span></div><p>
+    <div id="lon">origin.longitude: <span>-73.9</span></div>
+    <div id="lat">origin.latitude: <span>40.7</span></div><p>
     <div id="parallels">parallels: <span>29.5,45.5</span></div><p>
-    <div id="scale">scale: <span>1000</span></div><p>
+    <div id="scale">scale: <span>3000</span></div><p>
     <div id="translate-x">translate.x: <span>480</span></div>
     <div id="translate-y">translate.y: <span>250</span></div>
     <script type="text/javascript">
