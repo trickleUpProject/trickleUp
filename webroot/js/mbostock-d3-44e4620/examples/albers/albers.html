@@ -133,12 +133,58 @@ d3.json("../data/us-states.json", function(collection) {
 // literal pattern:     [, [
 //  replace with: [[
 
+                    
+      /*
+      .attr("transform", function(d) { 
+              console.log(d);
+              if(d.geometry && d.geometry.coordinates && d.geometry.coordinates.length > 0 && d.geometry.coordinates[0] && d.geometry.coordinates[0][0]) {
+                  var coords = d.geometry.coordinates;
+                  return "translate(" + coords[0][0] + "," + coords[0][1] + ")";
+              }
+              return "translate(-74.01, 40.713)";
+              //return "translate(" + path.centroid(d) + ")"; 
+          }
+      )
+      */
+  
+var counter = 1;
+      
 d3.json("../data/extracted-from-new-york-3.json", function(collection) {
   d3.select("#states")
     .selectAll("path")
       .data(collection.features)
     .enter().append("path")
       .attr("d", path);
+  
+  d3.select("#states")
+  .selectAll("path").each(function(d, i){
+      
+      console.log(d);
+      var coords = null;
+      if(d && d.geometry && d.geometry.coordinates && d.geometry.coordinates.length && d.geometry.coordinates.length > 0 ) {
+          coords = d.geometry.coordinates[0];
+      }
+      
+      var text = "x";
+      if(d && d.properties && d.properties.highway && d.properties.name) {
+          text = d.properties.name;
+      }
+
+      d3.select(this.parentNode).append("text")
+      .attr("y", function() { 
+          if(coords) return xy(coords)[1];
+          return xy([-74.01, 40.713])[1]; 
+       }) 
+      .attr("x", function(d) { 
+          if(coords) return xy(coords)[0]; 
+          return xy([-74.01, 40.713])[0]; 
+       })
+      .attr("text-anchor", "middle")
+      .attr("font-size", "6pt")
+      .text(function(d) { return text; });
+      
+  });
+
   
   d3.select("#states")
   .selectAll("circle")
