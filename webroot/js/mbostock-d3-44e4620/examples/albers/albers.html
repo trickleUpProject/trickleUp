@@ -60,7 +60,7 @@ function redraw() {
     svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
 
-
+/*
 var schools = [
                {
                    "dbn":"18K279",
@@ -89,6 +89,7 @@ var schools = [
                    "environment":"15.12027491"
                }               
 ];
+*/
 
 d3.json("../data/us-states.json", function(collection) {
   
@@ -133,23 +134,12 @@ d3.json("../data/us-states.json", function(collection) {
 // literal pattern:     [, [
 //  replace with: [[
 
-                    
-      /*
-      .attr("transform", function(d) { 
-              console.log(d);
-              if(d.geometry && d.geometry.coordinates && d.geometry.coordinates.length > 0 && d.geometry.coordinates[0] && d.geometry.coordinates[0][0]) {
-                  var coords = d.geometry.coordinates;
-                  return "translate(" + coords[0][0] + "," + coords[0][1] + ")";
-              }
-              return "translate(-74.01, 40.713)";
-              //return "translate(" + path.centroid(d) + ")"; 
-          }
-      )
-      */
   
 var counter = 1;
+var schoolsDataByDBN = {};
       
 d3.json("../data/extracted-from-new-york-3.json", function(collection) {
+    
   d3.select("#states")
     .selectAll("path")
       .data(collection.features)
@@ -159,7 +149,8 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
   d3.select("#states")
   .selectAll("path").each(function(d, i){
       
-      console.log(d);
+      //console.log(d);
+      
       var coords = null;
       if(d && d.geometry && d.geometry.coordinates && d.geometry.coordinates.length && d.geometry.coordinates.length > 0 ) {
           coords = d.geometry.coordinates[0];
@@ -231,13 +222,36 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
   });
 
   
-  d3.select("#states")
-  .selectAll("circle")
-  .data(schools)
-  .enter().append("circle")
-    .attr("r", 5)
-    .attr("cy", function(d) { return xy([-74.01, 40.713])[1]; }) 
-    .attr("cx", function(d) { return xy([-74.01, 40.713])[0]; });
+  d3.json("../data/schools_data_2009-f.json", function(schools) {
+      
+      d3.select("#states")
+      .selectAll("circle")
+      .data(schools)
+      .enter().append("circle")
+        .attr("r", 3)
+        .attr("dbn", function(d){
+            schoolsDataByDBN[d.dbn] = d;
+            return d.dbn
+        })
+        .style("fill", "yellow")
+        .attr("cy", function(d) {             
+            return xy([d.long, d.lat])[1]; 
+        }) 
+        .attr("cx", function(d) { 
+            return xy([d.long, d.lat])[0]; 
+        })
+        .on("click", function() {
+            var circle = d3.select(this);
+            console.log("circle clicked: dbn = " + circle.attr('dbn'));
+            console.log(schoolsDataByDBN[circle.attr('dbn')]);
+        });
+      
+        //TODO: for tooltips (rather than on-click, use Tipsy: http://bl.ocks.org/1373263)
+        
+        //TODO: for draw-path-with-mouseclick-mousemove, see: http://jsfiddle.net/555Cv/2/
+  });
+  
+  
 });
 
 
