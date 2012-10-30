@@ -165,22 +165,67 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
           coords = d.geometry.coordinates[0];
       }
       
-      var text = "x";
-      if(d && d.properties && d.properties.highway && d.properties.name) {
+      var text = "";
+      if(d && d.properties && d.properties.highway && d.properties.highway.length > 0 && d.properties.name && d.properties.name.length > 0) {
           text = d.properties.name;
       }
 
+      //console.log(text);
+      
+      var pathId = 'path_'+ i;
+      d3.select(this).attr('id', pathId);
+      
+      var rotation = 0;
+      if(coords) {
+          var startPt = d.geometry.coordinates[0];
+          var endPt = d.geometry.coordinates[1];
+          if((endPt && startPt) && (endPt[0] < startPt[0])) { // if endPt to the left of startPt (lon more negative)
+              rotation = 180; // degrees (try to flip the text, to keep it from being upside down)
+          }
+      }
+      
+      var yPos = null;
+      var xPos = null;
+      
       d3.select(this.parentNode).append("text")
       .attr("y", function() { 
-          if(coords) return xy(coords)[1];
-          return xy([-74.01, 40.713])[1]; 
+          if(coords) {
+              var result = null;
+              try {
+                  result = xy(coords)[1];
+              } catch(err) {
+                  // ignore
+              }
+              if(result) {
+                  yPos = result;
+                  return result;
+              }
+          }
+          yPos = xy([-74.01, 40.713])[1];
+          return yPos; 
        }) 
       .attr("x", function(d) { 
-          if(coords) return xy(coords)[0]; 
-          return xy([-74.01, 40.713])[0]; 
+          
+          if(coords) {
+              var result = null;
+              try {
+                  result = xy(coords)[0];
+              } catch(err) {
+                  // ignore
+              }
+              if(result) {
+                  xPos = result;
+                  return result;
+              }
+          }
+          xPos = xy([-74.01, 40.713])[0];
+          return xPos; 
        })
-      .attr("text-anchor", "middle")
-      .attr("font-size", "6pt")
+      .attr("text-anchor", "start")
+      .attr("font-size", "3pt")
+      .attr("transform", "rotate(" + rotation + " " + xPos + " " + yPos + ")")
+      .append("textPath")
+      .attr("xlink:href", "#"+pathId)
       .text(function(d) { return text; });
       
   });
