@@ -55,10 +55,8 @@ var path = d3.geo.path().projection(xy);
 
 var svg = d3.select("body")
   .append("svg")
-  
-.call(d3.behavior.zoom()
+  .call(d3.behavior.zoom()
     .on("zoom", redraw))
-  
   .append("g")
     .attr("id", "states");
 
@@ -235,8 +233,43 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
             var circle = d3.select(this);
             console.log("circle clicked: dbn = " + circle.attr('dbn'));
             var data = schoolsDataByDBN[circle.attr('dbn')];
-            
             console.log(data);
+            
+            
+            var startCoords = [-74.012328, 40.70927];
+            var startPlusCoords = [-74.012330, 40.709260];
+            var endCoords = [-74.012465, 40.708971];
+            
+            // Urban Assembly School of Business for Young Women
+            //"long": "-74.012847"
+            //"lat": "40.705416"
+            
+            var endCoords2 = [-74.012847, 40.705416];
+            
+            var startData = [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": [startCoords, startCoords]} }];
+            var endData = [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": [startCoords, endCoords2]} }]
+
+            if(data.long == startCoords[0] && data.lat == startCoords[1]) {
+                console.log("adding custom path ...");
+                var newPath = d3.select("#states")
+                //.selectAll("path")
+                .data(startData)
+                //.enter()
+                .append("path")
+                .attr("d", path)
+                .attr('id', "customPath")
+                .style("stroke", "red");
+                console.log("added custom path");
+                
+                // animate lenthening of path from startCoords to endCoords, and test removal of single path
+                // (incidentally only at end of transition)
+                newPath.data(endData).transition().attr("d", path).duration(5000).each("end",function() { 
+                    d3.select(this).remove(); 
+                 });;
+
+            }
+            
+            
             console.log("cx: " + circle.attr('cx'));
             console.log("cy: " + circle.attr('cy'));
             
@@ -262,6 +295,41 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
       });
         
         //TODO: for draw-path-with-mouseclick-mousemove, see: http://jsfiddle.net/555Cv/2/
+        
+        // see above, in on-click on circle:
+            
+        /*
+    var mouseIsDown = false;  
+    circle.on('mousedown mouseup mousemove', function(e) { // might conflict with 'click'! maybe check for control-char for the popup?
+        if (e.type == 'mousedown') {
+            mouseIsDown = true; 
+            //lineData[0] = [e.offsetX, e.offsetY]; // offsetX/Y apparently supported in FireFox; instead, use d3's global event-object (see docs)
+            //redrawLine();
+            
+            // basically, as above in on-click on circle,
+            // create path with startCoords and EndCoords both being essentially [e.offsetX, e.offsetY]
+            
+        } else if (e.type == 'mouseup' ){
+            mouseIsDown = false;
+            //lineData[1] = [e.offsetX, e.offsetY];
+            //redrawLine();
+            
+            // check if endCoords match (within rounding-error or so) those of a (valid?) school;
+            // if not, then "remove" the path, and show some message as to why removed
+            // clear both startCoords and endCoords
+            
+        } else if (e.type == 'mousemove') {
+            if (mouseIsDown) {
+                //lineData[1] = [e.offsetX, e.offsetY];
+                //redrawLine(); 
+                
+                // remove last path
+                // create new path with startCoords as before and endCoords as essentially [e.offsetX, e.offsetY]
+            }
+        }
+    });
+        */
+
   });
   
   
