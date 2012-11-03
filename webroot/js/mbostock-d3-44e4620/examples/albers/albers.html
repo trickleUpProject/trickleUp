@@ -60,6 +60,8 @@ var svg = d3.select("body")
   .append("g")
     .attr("id", "states");
 
+svg[0][0].parentNode.mouseBasedData = [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": []}}];
+
 function redraw() {
     svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
 }
@@ -125,6 +127,9 @@ d3.json("../data/us-states.json", function(collection) {
   
 var counter = 1;
 var schoolsDataByDBN = {};
+      
+window.currMouseBasedPath = null;
+
       
 d3.json("../data/extracted-from-new-york-3.json", function(collection) {
     
@@ -209,6 +214,9 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
       
   });
 
+  //var mouseIsDown = false;
+  //var mouseBasedData = [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": []}}];
+  //var mouseBasedCoords = mouseBasedData[0].geometry.coordinates;
   
   d3.json("../data/schools_data_2009-f.json", function(schools) {
       
@@ -228,7 +236,40 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
         .attr("cx", function(d) { 
             return xy([d.long, d.lat])[0]; 
         })
+        .on('mousedown', function(d, i) {
+            mouseIsDown = true; 
+            
+            var realSVG = svg[0][0].parentNode; // don't know why it's like this
+            console.log(realSVG);
+            
+            realSVG.mouseBasedData[0].geometry.coordinates[0] = [d.long, d.lat];
+            realSVG.mouseBasedData[0].geometry.coordinates[1] = [d.long, d.lat];
+            
+            //mouseBasedCoords[0] = d3.mouse(realSVG);
+            //mouseBasedCoords[1] = d3.mouse(realSVG);
+            
+            realSVG.currMouseBasedPath = d3.select("#states")
+            .data(realSVG.mouseBasedData)
+            .append("path")
+            .attr("d", path)
+            //.attr('id', "customPath") // need separate ID for each mouseBased Path
+            .style("stroke", "red");
+            
+            console.log(window.currMouseBasedPath);
+        })
+        .on('mouseup', function() {
+            mouseIsDown = false;
+            currMouseBasedPath = null;
+            // check if endCoords match (within rounding-error or so) those of a (valid?) school;
+            
+            // if not, then "remove" the path, and show some message as to why removed
+            
+            // clear startCoords
+        })
+        
+        /*
         .on("click", function() {
+            
             
             var circle = d3.select(this);
             console.log("circle clicked: dbn = " + circle.attr('dbn'));
@@ -265,7 +306,7 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
                 // (incidentally only at end of transition)
                 newPath.data(endData).transition().attr("d", path).duration(5000).each("end",function() { 
                     d3.select(this).remove(); 
-                 });;
+                 });
 
             }
             
@@ -283,8 +324,11 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
                  'top': (Math.floor(circle.attr('cy')) - 250) + "px" // subtract half the height of the svg-element
                 }
             );
+            
         });
+        */
         
+      /*
       $('svg circle').tipsy({ 
         gravity: 's', 
         html: true, 
@@ -293,47 +337,68 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
           return d.name + "<br/>blah blah blah blah<br/>blah blah blah blah<br/>blah blah blah blah<br/>blah blah blah blah"; 
         }
       });
-        
+      */
+      
         //TODO: for draw-path-with-mouseclick-mousemove, see: http://jsfiddle.net/555Cv/2/
-        
-        // see above, in on-click on circle:
-            
-        /*
-    var mouseIsDown = false;  
-    circle.on('mousedown mouseup mousemove', function(e) { // might conflict with 'click'! maybe check for control-char for the popup?
-        if (e.type == 'mousedown') {
-            mouseIsDown = true; 
-            //lineData[0] = [e.offsetX, e.offsetY]; // offsetX/Y apparently supported in FireFox; instead, use d3's global event-object (see docs)
-            //redrawLine();
-            
-            // basically, as above in on-click on circle,
-            // create path with startCoords and EndCoords both being essentially [e.offsetX, e.offsetY]
-            
-        } else if (e.type == 'mouseup' ){
-            mouseIsDown = false;
-            //lineData[1] = [e.offsetX, e.offsetY];
-            //redrawLine();
-            
-            // check if endCoords match (within rounding-error or so) those of a (valid?) school;
-            // if not, then "remove" the path, and show some message as to why removed
-            // clear both startCoords and endCoords
-            
-        } else if (e.type == 'mousemove') {
-            if (mouseIsDown) {
-                //lineData[1] = [e.offsetX, e.offsetY];
-                //redrawLine(); 
-                
-                // remove last path
-                // create new path with startCoords as before and endCoords as essentially [e.offsetX, e.offsetY]
-            }
-        }
-    });
-        */
 
   });
   
   
 });
+
+
+//var realSVG = svg[0][0].parentNode; // don't know why it's like this
+//console.log("realSVG: ");
+//console.log(realSVG);
+
+window.onload = function() {
+    
+    console.log("window.onload: setting mousemove-handler");
+    console.log(svg[0][0].parentNode);
+    
+    d3.select(svg[0][0].parentNode).on('mousemove', function() {
+        
+        console.log("mousemove: ");
+        console.log("currentMouseBasedPath:");
+        console.log(this.currMouseBasedPath);
+
+        if(this.currMouseBasedPath) {
+            
+            console.log(this.currMouseBasedPath);
+            
+            this.currMouseBasedPath.remove();
+            
+            var realSVG = svg[0][0].parentNode; // don't know why it's like this
+            
+            //d3.mouse() reports [x,y] in pixels; need to translate back to lon/lat;
+            // hence, invert(); but still need to account for translations and scaling (zooming) ?;
+            /*
+                //maybe try this (from: http://stackoverflow.com/questions/10349811/how-to-manipulate-translate-transforms-on-a-svg-element-with-javascript-in-chrom):
+                // and see this: https://developer.mozilla.org/en-US/docs/DOM/SVGTransform
+                
+                var xforms = myElement.transform.baseVal; // An SVGTransformList
+                var firstXForm = xforms.getItem(0);       // An SVGTransform
+                if (firstXForm.type == SVGTransform.SVG_TRANSFORM_TRANSLATE){
+                  var firstX = firstXForm.matrix.e,
+                      firstY = firstXForm.matrix.f;
+                }
+                
+                - then, apply those offsets(?) to d3.mouse(realSVG) ?
+            */
+            this.mouseBasedData[0].geometry.coordinates[1] = xy.invert(d3.mouse(realSVG));
+            
+            console.log(this.mouseBasedData[0].geometry.coordinates[1]);
+            
+            this.currMouseBasedPath = d3.select("#states")
+            .data(this.mouseBasedData)
+            .append("path")
+            .attr("d", path)
+            //.attr('id', "customPath")
+            .style("stroke", "red");
+        }
+    });
+};
+
 
 
 function refresh() {
