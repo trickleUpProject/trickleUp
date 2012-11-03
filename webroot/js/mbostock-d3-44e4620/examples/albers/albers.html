@@ -383,6 +383,9 @@ window.onload = function() {
                       firstY = firstXForm.matrix.f;
                 }
                 
+                - OR: just xy.translate() ?  (and similarly for scale?)
+                  - when no args are passed to those methods, they return the latest values thereof
+                
                 - then, apply those offsets(?) to d3.mouse(realSVG) ?
             */
             this.mouseBasedData[0].geometry.coordinates[1] = xy.invert(d3.mouse(realSVG));
