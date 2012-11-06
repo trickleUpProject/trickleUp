@@ -61,6 +61,7 @@ var svg = d3.select("body")
     .attr("id", "states");
 
 svg[0][0].parentNode.mouseBasedData = [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": []}}];
+svg[0][0].parentNode.clickCount = 0;
 
 function redraw() {
     svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
@@ -214,9 +215,6 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
       
   });
 
-  //var mouseIsDown = false;
-  //var mouseBasedData = [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": []}}];
-  //var mouseBasedCoords = mouseBasedData[0].geometry.coordinates;
   
   d3.json("../data/schools_data_2009-f.json", function(schools) {
       
@@ -239,27 +237,40 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
         .on('mousedown', function(d, i) {
             mouseIsDown = true; 
             
-            var realSVG = svg[0][0].parentNode; // don't know why it's like this
-            console.log(realSVG);
+            var realSVG = svg[0][0].parentNode; // don't know why need to reference like this
             
-            realSVG.mouseBasedData[0].geometry.coordinates[0] = [d.long, d.lat];
-            realSVG.mouseBasedData[0].geometry.coordinates[1] = [d.long, d.lat];
-            
-            //mouseBasedCoords[0] = d3.mouse(realSVG);
-            //mouseBasedCoords[1] = d3.mouse(realSVG);
-            
-            realSVG.currMouseBasedPath = d3.select("#states")
-            .data(realSVG.mouseBasedData)
-            .append("path")
-            .attr("d", path)
-            //.attr('id', "customPath") // need separate ID for each mouseBased Path
-            .style("stroke", "red");
-            
-            console.log(window.currMouseBasedPath);
+            if(!realSVG.currMouseBasedPath) {
+                realSVG.mouseBasedData[0].geometry.coordinates[0] = [d.long, d.lat];
+                realSVG.mouseBasedData[0].geometry.coordinates[1] = [d.long, d.lat];
+                
+                realSVG.currMouseBasedPath = d3.select("#states")
+                .data(realSVG.mouseBasedData)
+                .append("path")
+                .attr("d", path)
+                //.attr('id', "customPath") // need separate ID for each mouseBased Path
+                .style("stroke", "yellow");
+            }
+
         })
-        .on('mouseup', function() {
+        .on('mouseup', function(d, i) {
             mouseIsDown = false;
-            currMouseBasedPath = null;
+            var realSVG = svg[0][0].parentNode; // don't know why need to reference like this
+            
+            console.log("mouseup on circle: realSVG.startSchoolDBN: " + realSVG.startSchoolDBN);
+            
+            if(realSVG.startSchoolDBN) {
+                if(d.dbn != realSVG.startSchoolDBN) {
+                    realSVG.targetSchoolClicked = true;
+                    console.log("mouseup on circle: realSVG.targetSchoolClicked: " + realSVG.targetSchoolClicked);
+                }
+            } else {
+                realSVG.startSchoolDBN = d.dbn;
+                console.log("mouseup on circle: realSVG.startSchoolDBN: " + realSVG.startSchoolDBN);
+            }
+            
+            realSVG.clickCount++;
+            console.log("incremented clickCount to: " + realSVG.clickCount);
+            
             // check if endCoords match (within rounding-error or so) those of a (valid?) school;
             
             // if not, then "remove" the path, and show some message as to why removed
@@ -347,57 +358,76 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
 });
 
 
-//var realSVG = svg[0][0].parentNode; // don't know why it's like this
-//console.log("realSVG: ");
-//console.log(realSVG);
-
 window.onload = function() {
     
-    console.log("window.onload: setting mousemove-handler");
-    console.log(svg[0][0].parentNode);
-    
+    // not sure why need subscripting and parentNode here; thought "svg" should suffice
     d3.select(svg[0][0].parentNode).on('mousemove', function() {
-        
-        console.log("mousemove: ");
-        console.log("currentMouseBasedPath:");
-        console.log(this.currMouseBasedPath);
 
         if(this.currMouseBasedPath) {
             
-            console.log(this.currMouseBasedPath);
-            
             this.currMouseBasedPath.remove();
             
-            var realSVG = svg[0][0].parentNode; // don't know why it's like this
+            var g = svg[0][0];
+            var mousePos = d3.mouse(g);
             
-            //d3.mouse() reports [x,y] in pixels; need to translate back to lon/lat;
-            // hence, invert(); but still need to account for translations and scaling (zooming) ?;
-            /*
-                //maybe try this (from: http://stackoverflow.com/questions/10349811/how-to-manipulate-translate-transforms-on-a-svg-element-with-javascript-in-chrom):
-                // and see this: https://developer.mozilla.org/en-US/docs/DOM/SVGTransform
-                
-                var xforms = myElement.transform.baseVal; // An SVGTransformList
-                var firstXForm = xforms.getItem(0);       // An SVGTransform
-                if (firstXForm.type == SVGTransform.SVG_TRANSFORM_TRANSLATE){
-                  var firstX = firstXForm.matrix.e,
-                      firstY = firstXForm.matrix.f;
-                }
-                
-                - OR: just xy.translate() ?  (and similarly for scale?)
-                  - when no args are passed to those methods, they return the latest values thereof
-                
-                - then, apply those offsets(?) to d3.mouse(realSVG) ?
-            */
-            this.mouseBasedData[0].geometry.coordinates[1] = xy.invert(d3.mouse(realSVG));
-            
-            console.log(this.mouseBasedData[0].geometry.coordinates[1]);
+            this.mouseBasedData[0].geometry.coordinates[1] = xy.invert(mousePos);
             
             this.currMouseBasedPath = d3.select("#states")
             .data(this.mouseBasedData)
             .append("path")
             .attr("d", path)
             //.attr('id', "customPath")
-            .style("stroke", "red");
+            .style("stroke", "yellow");
+        }
+    });
+    
+    d3.select(svg[0][0].parentNode).on('mouseup', function() {
+
+        if(this.currMouseBasedPath) {
+            
+            //console.log("currentMouseBasedPath:");
+            //console.log(this.currMouseBasedPath);
+            
+            var g = svg[0][0];
+            var mousePos = d3.mouse(g);
+            var endCoords = xy.invert(mousePos);
+            var startCoords = this.mouseBasedData[0].geometry.coordinates[0];
+            
+            //console.log("endCoords:");
+            //console.log(endCoords);
+            //console.log("startCoords:");
+            //console.log(startCoords);
+            
+            var circleLonLatOffsets = xy.invert([3,3]); // circle-radius is '3' (pixels)
+            
+            if(Math.abs(endCoords[0] - startCoords[0]) < circleLonLatOffsets[0]) {
+                if(Math.abs(endCoords[1] - startCoords[1]) < circleLonLatOffsets[1]) {
+                    // if bubbling up from mouseup anywhere on start-circle, leave it be
+                    console.log("still on start-circle");
+                    return;
+                }
+            }
+            
+            console.log("svg mouseup: targetSchoolClicked: " + this.targetSchoolClicked);
+
+            if(this.targetSchoolClicked) {
+                this.targetSchoolClicked = null;
+                this.startSchoolDBN = null;
+                console.log("svg mouseup: nulled realSVG.startSchoolDBN: " + this.startSchoolDBN);
+                this.mouseBasedData[0].geometry.coordinates = []; // redundant?
+                this.currMouseBasedPath = null;
+            } else {
+                console.log("this.clickCount: " + this.clickCount);
+                if(this.clickCount > 1) { // handling click that should be on a target-circle but isn't
+                    this.currMouseBasedPath.remove();
+                    this.currMouseBasedPath = null;
+                    this.targetSchoolClicked = null;
+                    this.startSchoolDBN = null;
+                    this.clickCount = 0;
+                }
+                // first click (clickCount == 0 or 1) let pass
+            }
+
         }
     });
 };
