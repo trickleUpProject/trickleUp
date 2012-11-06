@@ -237,6 +237,12 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
         .on('mousedown', function(d, i) {
             mouseIsDown = true; 
             
+            console.log(d3.event);
+            if(!d3.event.altKey) {
+                console.log("no altKey; ignoring");
+                return false;
+            }
+            
             var realSVG = svg[0][0].parentNode; // don't know why need to reference like this
             
             if(!realSVG.currMouseBasedPath) {
@@ -250,10 +256,33 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
                 //.attr('id', "customPath") // need separate ID for each mouseBased Path
                 .style("stroke", "yellow");
             }
+            
+            console.log("mousedown on circle: realSVG.startSchoolDBN: " + realSVG.startSchoolDBN);
+            
+            if(realSVG.startSchoolDBN) {
+                if(d.dbn != realSVG.startSchoolDBN) {
+                    realSVG.targetSchoolClicked = true;
+                    console.log("mousedown on circle: realSVG.targetSchoolClicked: " + realSVG.targetSchoolClicked);
+                }
+            } else {
+                realSVG.startSchoolDBN = d.dbn;
+                console.log("mousedown on circle: realSVG.startSchoolDBN: " + realSVG.startSchoolDBN);
+            }
+            
+            //realSVG.clickCount++;
+            //console.log("incremented clickCount to: " + realSVG.clickCount);
 
         })
         .on('mouseup', function(d, i) {
             mouseIsDown = false;
+            
+            console.log(d3.event);
+            if(!d3.event.altKey) {
+                console.log("no altKey; ignoring");
+                return false;
+            }
+            
+            /*
             var realSVG = svg[0][0].parentNode; // don't know why need to reference like this
             
             console.log("mouseup on circle: realSVG.startSchoolDBN: " + realSVG.startSchoolDBN);
@@ -267,9 +296,7 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
                 realSVG.startSchoolDBN = d.dbn;
                 console.log("mouseup on circle: realSVG.startSchoolDBN: " + realSVG.startSchoolDBN);
             }
-            
-            realSVG.clickCount++;
-            console.log("incremented clickCount to: " + realSVG.clickCount);
+            */
             
             // check if endCoords match (within rounding-error or so) those of a (valid?) school;
             
@@ -281,6 +308,11 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
         /*
         .on("click", function() {
             
+            console.log(d3.event);
+            if(!d3.event.altKey) {
+                console.log("no altKey; ignoring"); // FIXME: use something other than ALT here
+                return false;
+            }
             
             var circle = d3.select(this);
             console.log("circle clicked: dbn = " + circle.attr('dbn'));
@@ -361,6 +393,26 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
 window.onload = function() {
     
     // not sure why need subscripting and parentNode here; thought "svg" should suffice
+    d3.select(svg[0][0].parentNode).on('mousedown', function() {
+
+        console.log(d3.event);
+        if(!d3.event.altKey) {
+            console.log("no altKey; ignoring");
+            return false;
+        }
+        
+        var realSVG = svg[0][0].parentNode;
+        realSVG.clickCount++;
+        
+        // don't care about first click; if second click not on a target-school,
+        // going to need to remove current path (below)
+        if(realSVG.clickCount == 2 && !realSVG.targetSchoolClicked) {
+            this.mouseDownOnG = true;
+            console.log("set mouseDownOnG: " + this.mouseDownOnG);
+        }
+    });
+    
+    // not sure why need subscripting and parentNode here; thought "svg" should suffice
     d3.select(svg[0][0].parentNode).on('mousemove', function() {
 
         if(this.currMouseBasedPath) {
@@ -369,6 +421,12 @@ window.onload = function() {
             
             var g = svg[0][0];
             var mousePos = d3.mouse(g);
+            
+            // without this (or similar), target-circle doesn't get click, because
+            // path is directly beneath the mouse
+            var circleLonLatOffsets = [1,1]; // circle-radius is '3' (pixels)
+            mousePos[0] += circleLonLatOffsets[0];
+            mousePos[1] += circleLonLatOffsets[1] > 0 ? -circleLonLatOffsets[1] : circleLonLatOffsets[1];
             
             this.mouseBasedData[0].geometry.coordinates[1] = xy.invert(mousePos);
             
@@ -383,6 +441,12 @@ window.onload = function() {
     
     d3.select(svg[0][0].parentNode).on('mouseup', function() {
 
+        console.log(d3.event);
+        if(!d3.event.altKey) {
+            console.log("no altKey; ignoring");
+            return false;
+        }
+        
         if(this.currMouseBasedPath) {
             
             //console.log("currentMouseBasedPath:");
@@ -404,7 +468,7 @@ window.onload = function() {
                 if(Math.abs(endCoords[1] - startCoords[1]) < circleLonLatOffsets[1]) {
                     // if bubbling up from mouseup anywhere on start-circle, leave it be
                     console.log("still on start-circle");
-                    return;
+                    return true;
                 }
             }
             
@@ -416,14 +480,17 @@ window.onload = function() {
                 console.log("svg mouseup: nulled realSVG.startSchoolDBN: " + this.startSchoolDBN);
                 this.mouseBasedData[0].geometry.coordinates = []; // redundant?
                 this.currMouseBasedPath = null;
+                this.clickCount = 0;
             } else {
-                console.log("this.clickCount: " + this.clickCount);
-                if(this.clickCount > 1) { // handling click that should be on a target-circle but isn't
+                console.log("this.mouseDownOnG: " + this.mouseDownOnG);
+                if(this.mouseDownOnG) { // handling click that should have been on a target-circle but wasn't
+                    console.log("target-click not on a school; removing path");
                     this.currMouseBasedPath.remove();
                     this.currMouseBasedPath = null;
                     this.targetSchoolClicked = null;
                     this.startSchoolDBN = null;
                     this.clickCount = 0;
+                    this.mouseDownOnG = null;
                 }
                 // first click (clickCount == 0 or 1) let pass
             }
