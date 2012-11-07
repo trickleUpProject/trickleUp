@@ -25,7 +25,7 @@ svg {
 }
 
 #states path {
-  fill: #aaaaff;
+  fill: #dddddd;
   stroke: #fff;
 }
 
@@ -136,7 +136,8 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
     .selectAll("path")
       .data(collection.features)
     .enter().append("path")
-      .attr("d", path);
+      .attr("d", path)
+      .style("stroke", "black");
   
   d3.select("#states")
   .selectAll("path").each(function(d, i){
@@ -149,6 +150,9 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
       var text = "";
       if(d && d.properties && d.properties.highway && d.properties.highway.length > 0 && d.properties.name && d.properties.name.length > 0) {
           text = d.properties.name;
+      } else {
+          d3.select(this).remove();
+          return;
       }
       
       var pathId = 'path_'+ i;
@@ -202,6 +206,7 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
        })
       .attr("text-anchor", "start")
       .attr("font-size", "3pt")
+      .style("fill", "#0000ff")
       .attr("transform", "rotate(" + rotation + " " + xPos + " " + yPos + ")")
       .append("textPath")
       .attr("xlink:href", "#"+pathId)
@@ -221,7 +226,7 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
             schoolsDataByDBN[d.dbn] = d;
             return d.dbn
         })
-        .style("fill", "yellow")
+        .style({"fill": "red", "stroke": "yellow"})
         .attr("cy", function(d) {             
             return xy([d.long, d.lat])[1]; 
         }) 
