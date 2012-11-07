@@ -251,7 +251,7 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
                 .data(realSVG.mouseBasedData)
                 .append("path")
                 .attr("d", path)
-                //.attr('id', "customPath") // need separate ID for each mouseBased Path
+                .attr('id', "customPath") // need separate ID for each mouseBased Path
                 .style("stroke", "yellow");
             }
             
@@ -401,8 +401,8 @@ window.onload = function() {
             .data(this.mouseBasedData)
             .append("path")
             .attr("d", path)
-            //.attr('id', "customPath")
-            .style("stroke", "yellow");
+            .attr('id', "customPath")
+            .style({"stroke": "black", "stroke-dasharray": "4,2"});
         }
     });
     
@@ -434,10 +434,25 @@ window.onload = function() {
             console.log("svg mouseup: targetSchoolClicked: " + this.targetSchoolClicked);
 
             if(this.targetSchoolClicked) {
+                
+                var realPath = this.currMouseBasedPath[0][0]; // weird need for this referencing
+                
+                d3.select(realPath.parentNode).append("text")
+                .attr("text-anchor", "start")
+                .attr("font-size", "6pt")
+                .style("fill", "#0000ff")
+                //.attr("transform", "rotate(" + rotation + " " + xPos + " " + yPos + ")") // TODO: handle this later
+                .append("textPath")
+                .attr('startOffset', "30%")
+                .attr("xlink:href", "#customPath")
+                .text(function(d) { return "<== 3 | 5 ==>"; })
+                
+                d3.select(realPath).style("stroke-dasharray", "0");
+                
                 this.targetSchoolClicked = null;
                 this.startSchoolDBN = null;
                 console.log("svg mouseup: nulled realSVG.startSchoolDBN: " + this.startSchoolDBN);
-                this.mouseBasedData[0].geometry.coordinates = []; // redundant?
+                this.mouseBasedData[0].geometry.coordinates = []; // redundant?                        
                 this.currMouseBasedPath = null;
                 this.clickCount = 0;
             } else {
