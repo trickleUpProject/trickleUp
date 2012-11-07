@@ -60,8 +60,9 @@ var svg = d3.select("body")
   .append("g")
     .attr("id", "states");
 
-svg[0][0].parentNode.mouseBasedData = [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": []}}];
-svg[0][0].parentNode.clickCount = 0;
+var realSVG = svg[0][0].parentNode; // not sure why need this referencing
+realSVG.mouseBasedData = [{"type": "Feature", "geometry": {"type": "LineString", "coordinates": []}}];
+realSVG.clickCount = 0;
 
 function redraw() {
     svg.attr("transform", "translate(" + d3.event.translate + ")scale(" + d3.event.scale + ")");
@@ -125,11 +126,8 @@ d3.json("../data/us-states.json", function(collection) {
 // literal pattern:     [, [
 //  replace with: [[
 
-  
-var counter = 1;
+
 var schoolsDataByDBN = {};
-      
-window.currMouseBasedPath = null;
 
       
 d3.json("../data/extracted-from-new-york-3.json", function(collection) {
@@ -143,8 +141,6 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
   d3.select("#states")
   .selectAll("path").each(function(d, i){
       
-      //console.log(d);
-      
       var coords = null;
       if(d && d.geometry && d.geometry.coordinates && d.geometry.coordinates.length && d.geometry.coordinates.length > 0 ) {
           coords = d.geometry.coordinates[0];
@@ -154,8 +150,6 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
       if(d && d.properties && d.properties.highway && d.properties.highway.length > 0 && d.properties.name && d.properties.name.length > 0) {
           text = d.properties.name;
       }
-
-      //console.log(text);
       
       var pathId = 'path_'+ i;
       d3.select(this).attr('id', pathId);
@@ -235,7 +229,6 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
             return xy([d.long, d.lat])[0]; 
         })
         .on('mousedown', function(d, i) {
-            mouseIsDown = true; 
             
             console.log(d3.event);
             if(!d3.event.altKey) {
@@ -243,7 +236,7 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
                 return false;
             }
             
-            var realSVG = svg[0][0].parentNode; // don't know why need to reference like this
+            var realSVG = svg[0][0].parentNode;
             
             if(!realSVG.currMouseBasedPath) {
                 realSVG.mouseBasedData[0].geometry.coordinates[0] = [d.long, d.lat];
@@ -268,41 +261,14 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
                 realSVG.startSchoolDBN = d.dbn;
                 console.log("mousedown on circle: realSVG.startSchoolDBN: " + realSVG.startSchoolDBN);
             }
-            
-            //realSVG.clickCount++;
-            //console.log("incremented clickCount to: " + realSVG.clickCount);
 
         })
         .on('mouseup', function(d, i) {
-            mouseIsDown = false;
-            
             console.log(d3.event);
             if(!d3.event.altKey) {
                 console.log("no altKey; ignoring");
                 return false;
             }
-            
-            /*
-            var realSVG = svg[0][0].parentNode; // don't know why need to reference like this
-            
-            console.log("mouseup on circle: realSVG.startSchoolDBN: " + realSVG.startSchoolDBN);
-            
-            if(realSVG.startSchoolDBN) {
-                if(d.dbn != realSVG.startSchoolDBN) {
-                    realSVG.targetSchoolClicked = true;
-                    console.log("mouseup on circle: realSVG.targetSchoolClicked: " + realSVG.targetSchoolClicked);
-                }
-            } else {
-                realSVG.startSchoolDBN = d.dbn;
-                console.log("mouseup on circle: realSVG.startSchoolDBN: " + realSVG.startSchoolDBN);
-            }
-            */
-            
-            // check if endCoords match (within rounding-error or so) those of a (valid?) school;
-            
-            // if not, then "remove" the path, and show some message as to why removed
-            
-            // clear startCoords
         })
         
         /*
@@ -381,8 +347,6 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
         }
       });
       */
-      
-        //TODO: for draw-path-with-mouseclick-mousemove, see: http://jsfiddle.net/555Cv/2/
 
   });
   
@@ -392,7 +356,6 @@ d3.json("../data/extracted-from-new-york-3.json", function(collection) {
 
 window.onload = function() {
     
-    // not sure why need subscripting and parentNode here; thought "svg" should suffice
     d3.select(svg[0][0].parentNode).on('mousedown', function() {
 
         console.log(d3.event);
@@ -412,7 +375,6 @@ window.onload = function() {
         }
     });
     
-    // not sure why need subscripting and parentNode here; thought "svg" should suffice
     d3.select(svg[0][0].parentNode).on('mousemove', function() {
 
         if(this.currMouseBasedPath) {
@@ -449,18 +411,10 @@ window.onload = function() {
         
         if(this.currMouseBasedPath) {
             
-            //console.log("currentMouseBasedPath:");
-            //console.log(this.currMouseBasedPath);
-            
             var g = svg[0][0];
             var mousePos = d3.mouse(g);
             var endCoords = xy.invert(mousePos);
             var startCoords = this.mouseBasedData[0].geometry.coordinates[0];
-            
-            //console.log("endCoords:");
-            //console.log(endCoords);
-            //console.log("startCoords:");
-            //console.log(startCoords);
             
             var circleLonLatOffsets = xy.invert([3,3]); // circle-radius is '3' (pixels)
             
@@ -492,9 +446,7 @@ window.onload = function() {
                     this.clickCount = 0;
                     this.mouseDownOnG = null;
                 }
-                // first click (clickCount == 0 or 1) let pass
             }
-
         }
     });
 };
